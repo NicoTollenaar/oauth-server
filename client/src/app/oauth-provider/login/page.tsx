@@ -6,7 +6,11 @@ export default function Login() {
   const router = useRouter();
   async function handleLogin() {
     console.log("handleLogin!");
-    const body = JSON.stringify({ email: "Piet", password: "some password" });
+    const body = JSON.stringify({ 
+      firstName: "Piet",
+      lastName: "Pietszoon",
+      email: "Piet@email.com", 
+      password: "some password" });
     try {
       const response = await fetch("http://localhost:4000/oauth-server/login", {
         method: "POST",

@@ -1,12 +1,13 @@
 import express, { Request, Response, NextFunction } from "express";
 import isAuthenticated from "./middleware/authenticationMiddleware";
+import Code from "../database/Code.Model";
+import { IUser, User } from "../database/User.Model";
+import type { ObjectId, Document } from "mongodb";
+import Utils from "../utils/utils";
 
 type User = {
-  id?: string;
-  email: string;
-  password: string;
+  id: ObjectId;
 };
-
 // Augment express-session with a custom SessionData object
 declare module "express-session" {
   interface SessionData {
@@ -17,21 +18,13 @@ declare module "express-session" {
 const router = express.Router();
 
 router.get("/code", async (req: Request, res: Response, next: NextFunction) => {
-  console.log("in /code, logging req.sessionID:", req.sessionID);
-  console.log(
-    "in /code, logging req.session, logging req.session:",
-    req.session
-  );
   if (req.session.user) {
-    
-    // req.session.save(function (err) {
-    //   if (err) return next(err);
-    //   const authorisationCode = "authorisation_code";
-    //   res.redirect(
-    //     `http://localhost:3000/get-resources?code=${authorisationCode}`
-    //   );
-    // });
-    const authorisationCode = "authorisation_code";
+    const authorisationCode = crypto.randomUUID();
+    const dbResult = await Code.findOneAndUpdate(
+      { userId: req.session.user.id },
+      { authorisationCode }
+    );
+    console.log("dbResult", dbResult);
     res.redirect(
       `http://localhost:3000/get-resources?code=${authorisationCode}`
     );
@@ -50,17 +43,24 @@ router.get("/code", async (req: Request, res: Response, next: NextFunction) => {
 router.post(
   "/login",
   isAuthenticated,
-  (req: Request, res: Response, next: NextFunction) => {
-    req.session.user = req.body;
-    console.log("in post /login route, logging req.body:", req.body);
-    console.log("in post /login route, logging req.sessionID:", req.sessionID);
-    console.log("in post /login route, logging req.session:", req.session);
-    req.session.save(function (err) {
-      if (err) {
-        console.log("session.save error, logging error:", err);
-        next(err);
-      }
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { firstName, lastName, email, password } = req.body;
+    const hashedPassword = await Utils.hashPassword(password);
+    const newUser = new User({
+      firstName,
+      lastName,
+      email,
+      hashedPassword,
     });
+    const { id } = await newUser.save();
+    console.log("id:", id);
+    req.session.user = { id };
+    // req.session.save(function (err) {
+    //   if (err) {
+    //     console.log("session.save error, logging error:", err);
+    //     next(err);
+    //   }
+    // });
     res.status(200).end();
   }
 );
