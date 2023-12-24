@@ -22,10 +22,9 @@ export default function Login() {
       });
       console.log("response.ok:", response.ok);
       if (response.ok) {
-        console.log("in if statement before router.push");
         router.push("http://localhost:4000/oauth-server/code");
       } else {
-        throw new Error("response not ok, logging response:");
+        throw new Error("response not ok");
       }
     } catch (error) {
       console.log("in catch block handleLogin, logging error:", error);

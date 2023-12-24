@@ -8,9 +8,9 @@ interface ICode {
 }
 
 const codeSchema = new Schema<ICode>({
-  authorisationCode: { type: String },
-  accessToken: { type: String },
-  idToken: { type: String },
+  authorisationCode: { type: String || null },
+  accessToken: { type: String || null},
+  idToken: { type: String || null},
   userId: { type: Schema.Types.ObjectId, ref: "User" },
 });
 

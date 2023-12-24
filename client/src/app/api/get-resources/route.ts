@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
+
 export async function POST(request: Request) {
-  const body = await request.text();
-  const retrievedResource = await getResource(body);
+  const authorisationCode = await request.text();
+  const retrievedResource = await getResource(authorisationCode);
   return Response.json({ retrievedResource, status: 200 });
 }
 
-async function getResource(code: string) {
-  const accessToken = await getAccessToken(code);
+async function getResource(authorisationCode: string) {
+  const accessToken = await getAccessToken(authorisationCode);
   if (!accessToken) {
     console.log("Unsuccessful accessToken request");
-    return NextResponse.json({
+    return Response.json({
       error: "Unsuccessful accessToken request",
       status: 500,
     });
@@ -18,8 +19,8 @@ async function getResource(code: string) {
   return retrievedResource;
 }
 
-async function getAccessToken(code: string) {
-  const body = `code=${code}`;
+async function getAccessToken(authorisationCode: string) {
+  const body = `code=${authorisationCode}`;
   const response = await fetch("http://localhost:4000/oauth-server/token", {
     method: "POST",
     headers: {
@@ -32,7 +33,7 @@ async function getAccessToken(code: string) {
     return accessToken;
   } else {
     console.log("Unsucessful accessToken request");
-    return NextResponse.json({
+    return Response.json({
       error: "Unsucessful accessToken request",
       status: 500,
     });
