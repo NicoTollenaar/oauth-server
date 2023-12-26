@@ -10,6 +10,6 @@ const clientSchema = new Schema<IClient>({
   hashedClientSecret: { type: String },
 });
 
-const Code = mongoose.model<IClient>("Client", clientSchema);
+const Client = mongoose.model<IClient>("Client", clientSchema);
 
-export default Code;
+export default Client;

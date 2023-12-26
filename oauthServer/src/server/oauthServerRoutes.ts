@@ -1,48 +1,52 @@
 import express, { Request, Response, NextFunction } from "express";
-import { isLoggedIn, isLoggedOut } from "./middleware/authenticationMiddleware";
+import {
+  isLoggedIn,
+  isLoggedOut,
+  isValidRequest,
+  saveCodesInDatabase,
+} from "./middleware/authenticationMiddleware";
 import Code from "../database/Code.Model";
 import { IUser, User } from "../database/User.Model";
 import type { ObjectId, Document } from "mongodb";
 import Utils from "../utils/utils";
-
-type User = {
-  id: ObjectId;
-};
-// Augment express-session with a custom SessionData object
-declare module "express-session" {
-  interface SessionData {
-    user: User;
-  }
-}
+import { redirect_uri } from "../constants/urls";
+import type { CurrentUser } from "../types/express/customTypes";
 
 const router = express.Router();
 
 router.get(
-  "/code",
+  "/authorize",
   isLoggedIn,
+  isValidRequest,
+  saveCodesInDatabase,
   async (req: Request, res: Response, next: NextFunction) => {
     console.log("req.session.user?.id", req.session.user?.id);
-    const authorisationCode = crypto.randomUUID();
-    try {
-      const dbCode = await Code.findOne({ userId: req.session.user?.id });
-      if (dbCode) {
-        const dbUpdatedCode = await Code.findByIdAndUpdate(dbCode._id, {
-          authorisationCode,
-        });
-        console.log("dbUpdatedCode", dbUpdatedCode);
-      } else {
-        const newCode = new Code({
-          userId: req.session.user?.id,
-          authorisationCode,
-        });
-        newCode.save();
-      }
-    } catch (error) {
-      console.log("In catch block, logging error:", error);
-      return res.status(500).send(error);
-    }
+    // const authorisationCode = crypto.randomUUID();
+    // try {
+    //   const dbCode = await Code.findOne({ userId: req.session.user?.id });
+    //   if (dbCode) {
+    //     const dbUpdatedCode = await Code.findByIdAndUpdate(dbCode._id, {
+    //       authorisationCode,
+    //     });
+    //     console.log("dbUpdatedCode", dbUpdatedCode);
+    //   } else {
+    //     const newCode = new Code({
+    //       userId: req.session.user?.id,
+    //       authorisationCode,
+    //     });
+    //     newCode.save();
+    //   }
+    // } catch (error) {
+    //   console.log("In catch block, logging error:", error);
+    //   return res.status(500).send(error);
+    // }
+    const queryString = `
+    code=${req.authorisationCode}&
+    state=${req.body.randomString}&
+   `;
     return res.redirect(
-      `http://localhost:3000/get-resources?code=${authorisationCode}`
+      // add other queryStringparameters
+      `${redirect_uri}?code=${req.authorisationCode}`
     );
   }
 );
@@ -57,7 +61,10 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
     hashedPassword,
   });
   const { id } = await newUser.save();
-  console.log("in lost route /login, logging user id returned from db:", id);
+  console.log(
+    "in post route /login, logging user db user id returned from db:",
+    id
+  );
   req.session.user = { id };
   // req.session.save(function (err) {
   //   if (err) {
@@ -65,14 +72,14 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
   //     next(err);
   //   }
   // });
-  res.status(200).end();
+  return res.status(200).end();
 });
 
 router.post(
-  "/token",
+  "/oauth/token",
   isLoggedIn,
   async (req: Request, res: Response, next: NextFunction) => {
-    console.log("in post /token route, logging req.body:", req.body);
+    console.log("in post /oauth/token route, logging req.body:", req.body);
     const { authorisationCode } = req.body;
     console.log("extracting and logging code:", authorisationCode);
     try {
@@ -97,3 +104,6 @@ router.post(
 );
 
 export default router;
+
+// todo
+// add other query string parameters when redturn authorization code

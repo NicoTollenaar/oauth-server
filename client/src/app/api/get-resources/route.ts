@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 
+import { redirect_uri, authorisationEndpoint, tokenEndpoint } from "@/app/constants/urls";
+
+
 export async function POST(request: Request) {
   const authorisationCode = await request.text();
   const retrievedResource = await getResource(authorisationCode);
@@ -21,7 +24,7 @@ async function getResource(authorisationCode: string) {
 
 async function getAccessToken(authorisationCode: string) {
   const body = `code=${authorisationCode}`;
-  const response = await fetch("http://localhost:4000/oauth-server/token", {
+  const response = await fetch("http://localhost:4000/oauth-server/oauth/token", {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",

@@ -2,10 +2,11 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-     "esModuleInterop": true,
+    "esModuleInterop": true,
     "outDir": "./dist",
     "strict": true
   },
+  "ts-node": { "files": true }, //this is needed to run .d.ts file
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }
