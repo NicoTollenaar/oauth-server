@@ -9,7 +9,6 @@ import oauthServerRoutes from "./oauthServerRoutes";
 import resourceServerRoutes from "./resourceServerRoutes";
 import { MongoClient } from "mongodb";
 
-console.log("imported mongoClientPromise:", mongoClientPromise);
 const app = express();
 const port = 4000;
 

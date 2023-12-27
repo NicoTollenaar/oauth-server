@@ -6,7 +6,6 @@ import { redirect_uri } from "@/app/constants/urls";
 export default function Login() {
   const router = useRouter();
   async function handleLogin() {
-    console.log("handleLogin!");
     const body = JSON.stringify({
       firstName: "Piet",
       lastName: "Pietszoon",
@@ -22,7 +21,6 @@ export default function Login() {
         },
         body,
       });
-      console.log("response.ok:", response.ok);
       if (response.ok) {
         router.push(`${redirect_uri}?loggedIn=true`);
       } else {

@@ -10,7 +10,7 @@ export async function isLoggedOut(
   next: NextFunction
 ) {
   if (req.session.user) {
-    return res.redirect(`${redirect_uri}`);
+    return res.redirect(`${redirect_uri}?loggedIn=true`);
   } else {
     next();
   }
@@ -36,22 +36,12 @@ export async function isValidRequest(
   res: Response,
   next: NextFunction
 ) {
-  console.log("req.query:", req.query);
   const [dbClient] = await Client.find({ clientId: req.query.client_id });
   const queryParametersValid = dbClient && req.query.response_type === "code";
-  console.log("dbClient:", dbClient);
-  console.log("req.query.response_type:", req.query.response_type);
-  console.log("req.query.client_id:", req.query.client_id);
-  console.log(
-    "req.query.response_type === code",
-    req.query.response_type === "code"
-  );
-  console.log("queryParametersValid", queryParametersValid);
-
   if (queryParametersValid) {
     next();
   } else {
-    res.status(401).send("Really eally Invalid authorisation request");
+    res.status(401).send("Invalid authorisation request");
   }
 }
 
@@ -70,7 +60,6 @@ export async function saveCodesInDatabase(
         authorisationCode,
         pkceCodeChallenge,
       });
-      console.log("dbUpdatedCode", dbUpdatedCode);
     } else {
       const newCode = new Code({
         userId: req.session.user?.id,
@@ -78,7 +67,6 @@ export async function saveCodesInDatabase(
         pkceCodeChallenge,
       });
       const dbNewCode = await newCode.save();
-      console.log("dbNewCode:", dbNewCode);
     }
     next();
   } catch (error) {

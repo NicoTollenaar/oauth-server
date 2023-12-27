@@ -9,7 +9,6 @@ export default async function crud() {
   try {
     // await mongoose.connect("mongodb://localhost:27017/newDb")
     const dbResult = await newUser.save();
-    console.log("dbResult", dbResult);
   } catch (error) {
     console.log(error);
   }
