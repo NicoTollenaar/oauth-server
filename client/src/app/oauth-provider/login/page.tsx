@@ -1,10 +1,15 @@
 "use client";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Utils } from "@/app/utils/utils";
 import { redirect_uri } from "@/app/constants/urls";
+export const dynamic = "force-dynamic";
 
 export default function Login() {
   const router = useRouter();
+  const queryParams = useSearchParams();
+  const queryObject = Utils.getQueryObject(queryParams);
+
   async function handleLogin() {
     const body = JSON.stringify({
       firstName: "Piet",
@@ -33,6 +38,9 @@ export default function Login() {
   return (
     <div>
       <button onClick={handleLogin}>Login</button>
+      <br />
+      <p>{JSON.stringify(queryObject)}</p>
+      <br />
     </div>
   );
 }

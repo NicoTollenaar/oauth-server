@@ -5,6 +5,7 @@ import {
   redirect_uri,
   authorisationEndpoint,
   tokenEndpoint,
+  confirmOrLoginEndpoint,
 } from "../constants/urls";
 import { Utils } from "../utils/utils";
 
@@ -13,16 +14,16 @@ export default function GetResources() {
   const [message, setMessage] = useState<string>("");
   const router = useRouter();
   const queryParams = useSearchParams();
+  console.log("queryParams in other page", queryParams);
 
   useEffect(() => {
-    if (queryParams.get("loggedIn")) {
+    if (queryParams.get("confirmed-or-loggedIn")) {
       handleClick();
       return;
     }
     const queryCode = queryParams.get("code");
     const queryState = queryParams.get("state");
-    if (!queryCode) return;
-    if (!queryState) return;
+    if (!queryCode || !queryState) return;
     if (localStorage.getItem("state") === queryState) getResource(queryCode);
     localStorage.removeItem("state");
   }, []);
@@ -47,9 +48,9 @@ export default function GetResources() {
     // when implementing PKCE get code challenge and code method from client server
     const randomString = crypto.randomUUID();
     localStorage.setItem("state", randomString);
-    const authorisationRequestUrl =
-      Utils.generateAuthorisationRequestUrl(randomString);
-    router.push(authorisationRequestUrl);
+    const queryString = Utils.buildQueryString(randomString);
+    const confirmOrLoginUrl = `${confirmOrLoginEndpoint}?${queryString}`;
+    router.push(confirmOrLoginUrl);
   }
 
   return (

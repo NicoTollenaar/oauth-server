@@ -10,9 +10,24 @@ import { IUser, User } from "../database/User.Model";
 import type { ObjectId, Document } from "mongodb";
 import Utils from "../utils/utils";
 import { redirect_uri } from "../constants/urls";
-import type { CurrentUser } from "../types/express/customTypes";
+import querystring from "querystring";
 
 const router = express.Router();
+
+router.get("/confirm-or-login", async (req: Request, res: Response) => {
+  const queryString = new URLSearchParams(
+    <Record<string, string>>req.query
+  ).toString();
+  if (req.session.user) {
+    return res.redirect(
+      `http://localhost:3000/oauth-provider/confirm?${queryString}`
+    );
+  } else {
+    return res.redirect(
+      `http://localhost:3000/oauth-provider/login?${queryString}`
+    );
+  }
+});
 
 router.get(
   "/authorize",
