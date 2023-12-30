@@ -1,8 +1,17 @@
-import { authorisationEndpoint, redirect_uri } from "../constants/urls";
+import {
+  authorisationEndpoint,
+  redirect_uri,
+  confirmEndpoint,
+} from "../constants/urls";
 import type { URLSearchParams } from "url";
 
 export class Utils {
-  static buildQueryString(randomState: string) {
+  static buildQueryStringConfirm(scope: string) {
+    const queryString =
+      `scope=${scope}&` + `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&`;
+    return queryString;
+  }
+  static buildQueryStringAuthorize(randomState: string) {
     const queryString =
       `response_type=code&` +
       `scope=no_scope_yet&` +
@@ -19,5 +28,29 @@ export class Utils {
       queryObject[`${key}`] = value;
     }
     return queryObject;
+  }
+  static async postConsentDataToConfirmEndpoint(
+    client_id: string,
+    scope: string
+  ) {
+    const body = JSON.stringify({
+      consent: {
+        client_id,
+        scope,
+      },
+    });
+    try {
+      const response = await fetch(confirmEndpoint, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body,
+      });
+      return response;
+    } catch (err) {
+      console.log("In utils, catch block, logging error:", err);
+    }
   }
 }

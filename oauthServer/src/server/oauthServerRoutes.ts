@@ -6,11 +6,9 @@ import {
   saveCodesInDatabase,
 } from "./middleware/authenticationMiddleware";
 import Code from "../database/Code.Model";
-import { IUser, User } from "../database/User.Model";
-import type { ObjectId, Document } from "mongodb";
+import { User } from "../database/User.Model";
 import Utils from "../utils/utils";
 import { redirect_uri } from "../constants/urls";
-import querystring from "querystring";
 
 const router = express.Router();
 
@@ -47,15 +45,43 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
   const { firstName, lastName, email, password } = req.body;
   // validate posted login credentials
   const hashedPassword = await Utils.hashPassword(password);
-  const newUser = new User({
-    firstName,
-    lastName,
-    email,
-    hashedPassword,
+  try {
+    // check login credentials more thoroughly
+    const dbUser = await User.findOne({ email: "piet@email.com" });
+    if (!dbUser) return res.status(400).end();
+    req.session.user = { id: dbUser._id };
+    return res.status(200).end();
+  } catch (error) {
+    console.log("in catch block, /login route, logging error:", error);
+  }
+  // const dbUser =
+  // const newUser = new User({
+  //   firstName,
+  //   lastName,
+  //   email,
+  //   hashedPassword,
+  //   timestamps: true,
+  // });
+  // const { id } = await newUser.save();
+});
+
+router.post("/confirm", isLoggedIn, async (req: Request, res: Response) => {
+  const { client_id, scope } = req.body;
+  // validate posted login credentials
+  // subdocument of User
+  const dbUpdatedUser = await User.findByIdAndUpdate(req.session.user?.id, {
+    oauthConsents: {
+      clientId: client_id,
+      scope,
+      date: Date.now(),
+    },
   });
-  const { id } = await newUser.save();
-  req.session.user = { id };
-  return res.status(200).end();
+  console.log("dbUpdatedUser:", dbUpdatedUser);
+  if (dbUpdatedUser) {
+    return res.status(200).end();
+  } else {
+    return res.status(400).end();
+  }
 });
 
 router.post(
@@ -87,3 +113,4 @@ export default router;
 // todo
 // add other query string parameters when redturn authorization code
 // check udemy whether query string redirect contains more than authorisation code and state
+// check login credential more thoroughly
