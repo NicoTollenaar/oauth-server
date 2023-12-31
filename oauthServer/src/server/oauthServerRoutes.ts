@@ -67,15 +67,34 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
 
 router.post("/confirm", isLoggedIn, async (req: Request, res: Response) => {
   const { client_id, scope } = req.body;
+  console.log(
+    "in post /confirm route, logging req.body, client_id, scope:",
+    req.body,
+    client_id,
+    scope
+  );
+  const scopeArray = scope.split(" ");
+  console.log("scopeArray", scopeArray);
+  console.log(
+    "in post /confirm route, logging req.session.user.id:",
+    req.session.user?.id
+  );
   // validate posted login credentials
   // subdocument of User
-  const dbUpdatedUser = await User.findByIdAndUpdate(req.session.user?.id, {
-    oauthConsents: {
-      clientId: client_id,
-      scope,
-      date: Date.now(),
+
+  const dbUpdatedUser = await User.findByIdAndUpdate(
+    req.session.user?.id,
+    {
+      $addToSet: {
+        oauthConsents: {
+          clientId: client_id,
+          scope: scopeArray,
+          date: Date.now(),
+        },
+      },
     },
-  });
+    { new: true, runValidators: true }
+  );
   console.log("dbUpdatedUser:", dbUpdatedUser);
   if (dbUpdatedUser) {
     return res.status(200).end();

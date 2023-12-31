@@ -63,7 +63,7 @@ export default function GetResources() {
     // when implementing PKCE get code challenge and code method from client server
     // const randomString = crypto.randomUUID();
     // localStorage.setItem("state", randomString);
-    const scope = "openID+profile+email";
+    const scope = "openId+profile+email";
     const queryString = Utils.buildQueryStringConfirm(scope);
     const confirmOrLoginUrl = `${confirmOrLoginEndpoint}?${queryString}`;
     router.push(confirmOrLoginUrl);

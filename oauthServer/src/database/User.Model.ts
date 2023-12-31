@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Scope, IUser } from "../types/express/customTypes";
+import { scopes, IUser } from "../types/express/customTypes";
 
 const userSchema = new mongoose.Schema<IUser>(
   {
@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema<IUser>(
     oauthConsents: [
       {
         clientId: { type: String, required: true },
-        scope: { type: String, required: true },
+        scope: [{ type: String, required: true, unique: true, enum: scopes }],
         date: { type: Date, required: true },
       },
     ],

@@ -4,11 +4,7 @@ export type CurrentUser = {
   id: ObjectId;
 };
 
-export enum Scope {
-  OpenID,
-  Profile,
-  Email,
-}
+export const scopes = ["openId", "email", "profile"];
 
 export interface IUser {
   firstName: string;
@@ -18,7 +14,7 @@ export interface IUser {
   oauthConsents: [
     {
       clientId: String;
-      scope: ["openId" | "profile" | "email" | ""];
+      scope: ["openId" | "email" | "profile"];
       date: Date;
     }
   ];

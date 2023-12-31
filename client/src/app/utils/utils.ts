@@ -34,10 +34,8 @@ export class Utils {
     scope: string
   ) {
     const body = JSON.stringify({
-      consent: {
-        client_id,
-        scope,
-      },
+      client_id,
+      scope,
     });
     try {
       const response = await fetch(confirmEndpoint, {
