@@ -7,17 +7,26 @@ import { Utils } from "@/app/utils/utils";
 
 export default function Authorize() {
   const queryParams = useSearchParams();
-  const { client_id, scope } = Utils.getQueryObject(queryParams);
+  const queryObject = Utils.getQueryObject(queryParams);
+  const {
+    response_type,
+    scope,
+    client_id,
+    state,
+    redirect_uri,
+    code_challenge,
+    code_challenge_method,
+  } = Utils.getQueryObject(queryParams);
+
   const isLoggedIn = useLoggedInStatus();
   return (
     <div>
       {isLoggedIn ? (
-        <Confirm client_id={client_id} scope={scope} />
+        <Confirm queryObject={queryObject} />
       ) : (
         <Login
           loggedInStatus={isLoggedIn}
-          client_id={client_id}
-          scope={scope}
+          queryObject={queryObject}
         />
       )}
     </div>

@@ -4,18 +4,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Utils } from "../utils/utils";
 import { redirect_uri, confirmEndpoint } from "../constants/urls";
 import Confirm from "./Confirm";
+import { QueryObject } from "../types/customTypes";
 
 interface LoginProps {
   loggedInStatus: boolean;
-  client_id: string;
-  scope: string;
+  queryObject: QueryObject
 }
 
-export default function Login({
-  loggedInStatus,
-  client_id,
-  scope,
-}: LoginProps) {
+export default function Login({ loggedInStatus, queryObject }: LoginProps) {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(loggedInStatus);
   const router = useRouter();
   const [firstName, setFirstName] = useState("Piet");
@@ -25,8 +21,6 @@ export default function Login({
 
   async function handleLogin() {
     const loginFormData = {
-      firstName,
-      lastName,
       email,
       password,
     };
@@ -49,7 +43,7 @@ export default function Login({
   return (
     <div>
       {isLoggedIn ? (
-        <Confirm client_id={client_id} scope={scope} />
+        <Confirm queryObject={queryObject} />
       ) : (
         <button onClick={handleLogin}>Login</button>
       )}

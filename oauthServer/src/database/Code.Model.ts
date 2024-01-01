@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-interface ICode {
+export interface ICode {
   authorisationCode: { type: String };
   pkceCodeChallenge: { type: String };
   accessToken: { type: String };

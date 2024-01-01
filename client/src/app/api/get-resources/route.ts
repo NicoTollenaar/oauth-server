@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 
 import {
-  redirect_uri,
-  authorisationEndpoint,
   tokenEndpoint,
 } from "@/app/constants/urls";
 

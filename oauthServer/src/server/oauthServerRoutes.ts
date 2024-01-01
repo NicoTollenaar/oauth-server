@@ -3,7 +3,9 @@ import {
   isLoggedIn,
   isLoggedOut,
   isValidRequest,
-  saveCodesInDatabase,
+  saveConsent,
+  generateAndSaveCodes,
+  returnAuthorisationCode,
 } from "./middleware/authenticationMiddleware";
 import Code from "../database/Code.Model";
 import { User } from "../database/User.Model";
@@ -35,18 +37,27 @@ router.get("/confirm-or-login", async (req: Request, res: Response) => {
   }
 });
 
-router.get(
+// router.get(
+//   "/authorize",
+//   isLoggedIn,
+//   isValidRequest,
+//   saveCodesInDatabase,
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const queryString = `code=${req.authorisationCode}&state=${req.query.state}`;
+//     return res.redirect(
+//       // add other queryStringparameters
+//       `${redirect_uri}?${queryString}`
+//     );
+//   }
+// );
+
+router.post(
   "/authorize",
   isLoggedIn,
   isValidRequest,
-  saveCodesInDatabase,
-  async (req: Request, res: Response, next: NextFunction) => {
-    const queryString = `code=${req.authorisationCode}&state=${req.query.state}`;
-    return res.redirect(
-      // add other queryStringparameters
-      `${redirect_uri}?${queryString}`
-    );
-  }
+  saveConsent,
+  generateAndSaveCodes,
+  returnAuthorisationCode
 );
 
 router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
@@ -144,3 +155,4 @@ export default router;
 // add other query string parameters when redturn authorization code
 // check udemy whether query string redirect contains more than authorisation code and state
 // check login credential more thoroughly
+// add expiry time to authorisation code

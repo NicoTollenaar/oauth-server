@@ -1,44 +1,41 @@
 import { useRouter } from "next/navigation";
 import { Utils } from "../utils/utils";
 import { redirect_uri } from "../constants/urls";
+import type { QueryObject } from "../types/customTypes";
 
 interface ConfirmProps {
-  client_id: string;
-  scope: string;
+  queryObject: QueryObject;
 }
 
-export default function Confirm({ client_id, scope }: ConfirmProps) {
+export default function Confirm({ queryObject }: ConfirmProps) {
   const router = useRouter();
-
   async function handleConfirm() {
     try {
-      const responseConfirm = await Utils.postConsentDataToConfirmEndpoint(
-        client_id,
-        scope
+      const response = await Utils.postConsentAndGetAuthorisationCode(
+        queryObject
       );
-      if (!responseConfirm?.ok) {
-        router.push(`${redirect_uri}?error=true`);
+      const responseObject = await response?.json();
+      console.log("In handleConfirm, logging responseObject:", responseObject);
+      if (response?.ok) {
+        router.push(
+          `${redirect_uri}?code=${responseObject.authorisationCode}&state=${queryObject.state}`
+        );
+      } else {
+        router.push(`${redirect_uri}?error=${responseObject.error}`);
       }
-      const responseSaveAuthorisationCode = await Utils.postAuthorisationCode()
-
-      //   if (response?.ok) {
-      //     router.push(`${redirect_uri}?confirmed=true`);
-      //   } else {
-      //     router.push(`${redirect_uri}?error=true`);
-      //   }
     } catch (error) {
       console.log("in catch block handleConfirm, logging error:", error);
-      router.push(`${redirect_uri}?error=true`);
+      router.push(`${redirect_uri}?error=${error}`);
     }
   }
   return (
     <div>
       <h1>
-        Application with clientID {client_id} is asking to access information
-        with the following scope:
+        Application with clientID {queryObject.client_id} is asking to access
+        information with the following scope:
       </h1>
       <br />
-      <ul>{JSON.stringify(scope)}</ul>
+      <ul>{JSON.stringify(queryObject.scope)}</ul>
       <br />
       <h1>Do you consent?</h1>
       <br />

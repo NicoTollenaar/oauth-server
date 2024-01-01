@@ -1,11 +1,11 @@
 import {
-  authorisationEndpoint,
+  authorisationEndpointBackend,
   redirect_uri,
   confirmEndpoint,
   loginEndpoint,
 } from "../constants/urls";
 import type { URLSearchParams } from "url";
-import { LoginFormData } from "../types/customTypes";
+import { LoginFormData, QueryObject } from "../types/customTypes";
 
 export class Utils {
   static buildQueryStringConfirm(scope: string) {
@@ -13,10 +13,10 @@ export class Utils {
       `scope=${scope}&` + `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&`;
     return queryString;
   }
-  static buildQueryStringAuthorize(randomState: string) {
+  static buildQueryStringAuthorize(randomState: string, scope: string) {
     const queryString =
       `response_type=code&` +
-      `scope=no_scope_yet&` +
+      `scope=${scope}&` +
       `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&` +
       `state=${randomState}&` +
       `redirect_uri=${redirect_uri}&` +
@@ -31,22 +31,15 @@ export class Utils {
     }
     return queryObject;
   }
-  static async postConsentDataToConfirmEndpoint(
-    client_id: string,
-    scope: string
-  ) {
-    const body = JSON.stringify({
-      client_id,
-      scope,
-    });
+  static async postConsentAndGetAuthorisationCode(queryObject: QueryObject) {
     try {
-      const response = await fetch(confirmEndpoint, {
+      const response = await fetch(authorisationEndpointBackend, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
         },
-        body,
+        body: JSON.stringify(queryObject)
       });
       return response;
     } catch (err) {

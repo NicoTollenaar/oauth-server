@@ -3,10 +3,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   redirect_uri,
-  authorisationEndpoint,
+  authorisationEndpointFrontend,
   tokenEndpoint,
-  confirmOrLoginEndpoint,
-  authorisationUrl,
 } from "../constants/urls";
 import { Utils } from "../utils/utils";
 
@@ -17,18 +15,29 @@ export default function GetResources() {
   const queryParams = useSearchParams();
 
   useEffect(() => {
-    if (queryParams.get("confirmed")) {
-      requestAuthorisationCode();
-      return;
-    } else if (queryParams.get("error")) {
-      setMessage("Confirmation failed");
-      return;
-    }
+    // if (queryParams.get("confir")) {
+    //   requestAuthorisationCode();
+    //   return;
+    // } else if (queryParams.get("error")) {
+    //   setMessage("Confirmation failed");
+    //   return;
+    // }
     const queryCode = queryParams.get("code");
     const queryState = queryParams.get("state");
     const storageState = localStorage.getItem("state");
-    if (!queryCode || !queryState || !storageState) return;
-    if (storageState === queryState) {
+    const queryError = queryParams.has("error");
+    console.log("queryCode", queryCode);
+    console.log("queryState", queryState);
+    console.log("storageState", storageState);
+    console.log("queryError", queryError);
+
+    if (!queryCode || !queryState || !storageState) {
+      localStorage.removeItem("state");
+      return;
+    }
+    if (queryError) {
+      setMessage(queryParams.get("error") as string);
+    } else if (storageState === queryState) {
       getResource(queryCode);
     } else {
       setMessage("someone tampered with state");
@@ -55,20 +64,15 @@ export default function GetResources() {
   function requestAuthorisationCode() {
     const randomString = crypto.randomUUID();
     localStorage.setItem("state", randomString);
-    const queryString = Utils.buildQueryStringAuthorize(randomString);
-    const authorisationUrl = `${authorisationEndpoint}?${queryString}`;
+    const scope = "openId+profile+email";
+    const queryString = Utils.buildQueryStringAuthorize(randomString, scope);
+    const authorisationUrl = `${authorisationEndpointFrontend}?${queryString}`;
     router.push(authorisationUrl);
   }
 
   function handleClick() {
     // when implementing PKCE get code challenge and code method from client server
-    // const randomString = crypto.randomUUID();
-    // localStorage.setItem("state", randomString);
-    const scope = "openId+profile+email";
-    const queryString = Utils.buildQueryStringConfirm(scope);
-    // const confirmOrLoginUrl = `${confirmOrLoginEndpoint}?${queryString}`;
-    // router.push(confirmOrLoginUrl);
-    const authorizeUrl = router.push(`${authorisationUrl}?${queryString}`);
+    requestAuthorisationCode();
   }
 
   return (

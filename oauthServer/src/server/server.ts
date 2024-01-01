@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
   res.send("Hello, TypeScript with Express!");
 });
 
-app.use("/oauth-server", oauthServerRoutes);
+app.use("/oauth-server-backend", oauthServerRoutes);
 app.use("/resource-server", resourceServerRoutes);
 
 app.listen(port, () => {
