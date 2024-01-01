@@ -36,7 +36,6 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
   try {
     // check login credentials more thoroughly
     const dbUser = await User.findOne({ email: "piet@email.com" });
-    console.log("In post login route, logging dbUser:", dbUser);
     if (!dbUser) return res.status(400).end();
     req.session.user = { id: dbUser._id };
     return res.status(200).end();

@@ -7,7 +7,6 @@ import mongoClientPromise from "../database/connectMongoDb";
 import cors from "cors";
 import oauthServerRoutes from "./routes/oauthServerRoutes";
 import resourceServerRoutes from "./routes/resourceServerRoutes";
-import { MongoClient } from "mongodb";
 
 const app = express();
 const port = 4000;

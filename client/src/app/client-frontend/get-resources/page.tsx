@@ -10,16 +10,12 @@ export default function GetResources() {
   const router = useRouter();
   const queryParams = useSearchParams();
 
+  // question whether I need useEffect for this, try without
   useEffect(() => {
     const queryCode = queryParams.get("code");
     const queryState = queryParams.get("state");
     const storageState = localStorage.getItem("state");
     const queryError = queryParams.has("error");
-    console.log("queryCode", queryCode);
-    console.log("queryState", queryState);
-    console.log("storageState", storageState);
-    console.log("queryError", queryError);
-
     if (!queryCode || !queryState || !storageState) {
       localStorage.removeItem("state");
       return;
@@ -27,15 +23,16 @@ export default function GetResources() {
     if (queryError) {
       setMessage(queryParams.get("error") as string);
     } else if (storageState === queryState) {
-      getResource(queryCode);
+      getAccessTokenAndResource(queryCode);
     } else {
       setMessage("someone tampered with state");
     }
     localStorage.removeItem("state");
   }, []);
 
-  async function getResource(code: string) {
-    const response = await Utils.requestResource(code);
+  // still need to swap authorisation code for accestoken
+  async function getAccessTokenAndResource(code: string) {
+    const response = await Utils.requestAccessTokenAndResource(code);
     const responseJSON = await response.json();
     if (response.ok) {
       setResource(responseJSON.resource);

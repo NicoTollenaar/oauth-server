@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 
-import {
-  tokenEndpoint,
-} from "@/app/constants/urls";
+import { tokenEndpoint } from "@/app/constants/urls";
 
 export async function POST(request: Request) {
   const authorisationCode = await request.text();
@@ -26,7 +24,7 @@ async function getResource(authorisationCode: string) {
 async function getAccessToken(authorisationCode: string) {
   const body = `code=${authorisationCode}`;
   const response = await fetch(
-    "http://localhost:4000/oauth-server/oauth/token",
+    "http://localhost:4000/oauth-backend/oauth/token",
     {
       method: "POST",
       headers: {

@@ -6,6 +6,7 @@ import {
 } from "../constants/urls";
 import type { URLSearchParams } from "url";
 import { LoginFormData, QueryObject } from "../types/customTypes";
+import { queryParameters } from "../constants/otherConstants";
 
 export class Utils {
   static buildQueryStringAuthorize(randomState: string, scope: string) {
@@ -39,7 +40,7 @@ export class Utils {
       });
       return response;
     } catch (err) {
-      console.log("In utils, catch block, logging error:", err);
+      console.log("In catch block utils, logging error:", err);
     }
   }
 
@@ -60,7 +61,8 @@ export class Utils {
     }
   }
 
-  static async requestResource(code: string) {
+  // still need to swap authorisation code for accestoken
+  static async requestAccessTokenAndResource(code: string) {
     const response = await fetch(resourcesEndpoint, {
       method: "POST",
       headers: {
@@ -70,4 +72,16 @@ export class Utils {
     });
     return response;
   }
+
+  static isProfileQueryObject(queryObject: Record<string, string>) {
+    const queryObjectKeys = Object.keys(queryObject);
+    if (queryObjectKeys.length !== queryParameters.length) return false;
+    for (let key of queryObjectKeys) {
+      if (!queryParameters.includes(key)) return false;
+    }
+    return true;
+  }
 }
+
+// todo
+// still need to swap authorisation code for accestoken

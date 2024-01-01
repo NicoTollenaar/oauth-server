@@ -15,7 +15,6 @@ export default function Confirm({ queryObject }: ConfirmProps) {
         queryObject
       );
       const responseObject = await response?.json();
-      console.log("In handleConfirm, logging responseObject:", responseObject);
       if (response?.ok) {
         router.push(
           `${redirect_uri}?code=${responseObject.authorisationCode}&state=${queryObject.state}`

@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Utils } from "../../utils/utils";
 import { redirect_uri } from "../../constants/urls";
 import Confirm from "./Confirm";

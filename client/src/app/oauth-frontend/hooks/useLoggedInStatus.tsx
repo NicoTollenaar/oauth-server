@@ -12,7 +12,6 @@ export default function useLoggedInStatus() {
           credentials: "include",
         });
         const { isLoggedIn } = await response.json();
-        console.log("In custom hook, logging isLoggedIn:", isLoggedIn);
         setIsLoggedIn(isLoggedIn);
       } catch (error) {
         console.log("In catch block, logging error:", error);

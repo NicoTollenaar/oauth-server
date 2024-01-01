@@ -68,7 +68,6 @@ export async function saveConsent(
       },
       { new: true, runValidators: true }
     );
-    console.log("dbUpdatedUser:", dbUpdatedUser);
     if (dbUpdatedUser) {
       next();
     } else {
