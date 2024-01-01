@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Utils } from "@/app/utils/utils";
 import { redirect_uri } from "@/app/constants/urls";
-export const dynamic = "force-dynamic";
 
 export default function Login() {
   const [firstName, setFirstName] = useState("Piet");
@@ -16,22 +15,15 @@ export default function Login() {
   const { client_id, scope } = Utils.getQueryObject(queryParams);
 
   async function handleLogin() {
-    const bodyLogin = JSON.stringify({
+    const loginFormData = {
       firstName,
       lastName,
       email,
       password,
-    });
+    };
     try {
-      const responseLogin = await fetch("http://localhost:4000/oauth-server/login", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: bodyLogin,
-      });
-      if (responseLogin.ok) {
+    const responseLogin = await Utils.postLoginRequest(loginFormData);
+      if (responseLogin?.ok) {
         const responseConfirm = await Utils.postConsentDataToConfirmEndpoint(client_id, scope);
         if (responseConfirm?.ok) {
           router.push(`${redirect_uri}?confirmed=true`);

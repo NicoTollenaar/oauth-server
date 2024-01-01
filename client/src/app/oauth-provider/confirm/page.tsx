@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Utils } from "@/app/utils/utils";
 import { redirect_uri, confirmEndpoint } from "@/app/constants/urls";
-export const dynamic = "force-dynamic";
 
 export default function Confirm() {
   const router = useRouter();

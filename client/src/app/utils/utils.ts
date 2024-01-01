@@ -2,8 +2,10 @@ import {
   authorisationEndpoint,
   redirect_uri,
   confirmEndpoint,
+  loginEndpoint,
 } from "../constants/urls";
 import type { URLSearchParams } from "url";
+import { LoginFormData } from "../types/customTypes";
 
 export class Utils {
   static buildQueryStringConfirm(scope: string) {
@@ -49,6 +51,23 @@ export class Utils {
       return response;
     } catch (err) {
       console.log("In utils, catch block, logging error:", err);
+    }
+  }
+
+  static async postLoginRequest(loginFormData: LoginFormData) {
+    const body = JSON.stringify(loginFormData);
+    try {
+      const response = await fetch(loginEndpoint, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body,
+      });
+      return response;
+    } catch (err) {
+      console.log("In catch block, logging error:", err);
     }
   }
 }

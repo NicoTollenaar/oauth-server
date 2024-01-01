@@ -12,6 +12,14 @@ import { redirect_uri } from "../constants/urls";
 
 const router = express.Router();
 
+router.get("/is-logged-in", async (req: Request, res: Response) => {
+  if (req.session.user) {
+    return res.json({ isLoggedIn: true });
+  } else {
+    return res.json({ isLoggedIn: false });
+  }
+});
+
 router.get("/confirm-or-login", async (req: Request, res: Response) => {
   const queryString = new URLSearchParams(
     <Record<string, string>>req.query
@@ -48,6 +56,7 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
   try {
     // check login credentials more thoroughly
     const dbUser = await User.findOne({ email: "piet@email.com" });
+    console.log("In post login route, logging dbUser:", dbUser);
     if (!dbUser) return res.status(400).end();
     req.session.user = { id: dbUser._id };
     return res.status(200).end();
@@ -82,20 +91,22 @@ router.post("/confirm", isLoggedIn, async (req: Request, res: Response) => {
   // validate posted login credentials
   // subdocument of User
 
-  const dbUpdatedUser = await User.findByIdAndUpdate(
-    req.session.user?.id,
-    {
-      $addToSet: {
-        oauthConsents: {
-          clientId: client_id,
-          scope: scopeArray,
-          date: Date.now(),
-        },
-      },
-    },
-    { new: true, runValidators: true }
-  );
-  console.log("dbUpdatedUser:", dbUpdatedUser);
+  const dbUpdatedUser = true;
+
+  // const dbUpdatedUser = await User.findByIdAndUpdate(
+  //   req.session.user?.id,
+  //   {
+  //     $addToSet: {
+  //       oauthConsents: {
+  //         clientId: client_id,
+  //         scope: scopeArray,
+  //         date: Date.now(),
+  //       },
+  //     },
+  //   },
+  //   { new: true, runValidators: true }
+  // );
+  // console.log("dbUpdatedUser:", dbUpdatedUser);
   if (dbUpdatedUser) {
     return res.status(200).end();
   } else {

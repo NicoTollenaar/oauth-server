@@ -6,6 +6,7 @@ import {
   authorisationEndpoint,
   tokenEndpoint,
   confirmOrLoginEndpoint,
+  authorisationUrl,
 } from "../constants/urls";
 import { Utils } from "../utils/utils";
 
@@ -51,7 +52,7 @@ export default function GetResources() {
     }
   }
 
-  async function requestAuthorisationCode() {
+  function requestAuthorisationCode() {
     const randomString = crypto.randomUUID();
     localStorage.setItem("state", randomString);
     const queryString = Utils.buildQueryStringAuthorize(randomString);
@@ -65,8 +66,9 @@ export default function GetResources() {
     // localStorage.setItem("state", randomString);
     const scope = "openId+profile+email";
     const queryString = Utils.buildQueryStringConfirm(scope);
-    const confirmOrLoginUrl = `${confirmOrLoginEndpoint}?${queryString}`;
-    router.push(confirmOrLoginUrl);
+    // const confirmOrLoginUrl = `${confirmOrLoginEndpoint}?${queryString}`;
+    // router.push(confirmOrLoginUrl);
+    const authorizeUrl = router.push(`${authorisationUrl}?${queryString}`);
   }
 
   return (
