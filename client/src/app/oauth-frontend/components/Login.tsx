@@ -1,14 +1,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Utils } from "../utils/utils";
-import { redirect_uri, confirmEndpoint } from "../constants/urls";
+import { Utils } from "../../utils/utils";
+import { redirect_uri } from "../../constants/urls";
 import Confirm from "./Confirm";
-import { QueryObject } from "../types/customTypes";
+import { QueryObject } from "../../types/customTypes";
 
 interface LoginProps {
   loggedInStatus: boolean;
-  queryObject: QueryObject
+  queryObject: QueryObject;
 }
 
 export default function Login({ loggedInStatus, queryObject }: LoginProps) {
@@ -26,10 +26,6 @@ export default function Login({ loggedInStatus, queryObject }: LoginProps) {
     };
     try {
       const response = await Utils.postLoginRequest(loginFormData);
-      console.log(
-        "In handleLogin, logging response postLoginRequest:",
-        response
-      );
       if (response?.ok) {
         setIsLoggedIn(true);
       } else {

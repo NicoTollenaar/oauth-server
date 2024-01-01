@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { loggedInStatusEndpoint } from "../constants/urls";
+import { loggedInStatusEndpoint } from "../../constants/urls";
 
 export default function useLoggedInStatus() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);

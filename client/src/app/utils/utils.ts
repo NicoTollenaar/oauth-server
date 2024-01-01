@@ -1,18 +1,13 @@
 import {
   authorisationEndpointBackend,
   redirect_uri,
-  confirmEndpoint,
+  resourcesEndpoint,
   loginEndpoint,
 } from "../constants/urls";
 import type { URLSearchParams } from "url";
 import { LoginFormData, QueryObject } from "../types/customTypes";
 
 export class Utils {
-  static buildQueryStringConfirm(scope: string) {
-    const queryString =
-      `scope=${scope}&` + `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&`;
-    return queryString;
-  }
   static buildQueryStringAuthorize(randomState: string, scope: string) {
     const queryString =
       `response_type=code&` +
@@ -25,12 +20,13 @@ export class Utils {
     return queryString;
   }
   static getQueryObject(searchParamsIterator: URLSearchParams) {
-    const queryObject: Record<string, string> = {};
+    let queryObject: Record<string, string> = {};
     for (const [key, value] of searchParamsIterator.entries()) {
       queryObject[`${key}`] = value;
     }
     return queryObject;
   }
+
   static async postConsentAndGetAuthorisationCode(queryObject: QueryObject) {
     try {
       const response = await fetch(authorisationEndpointBackend, {
@@ -39,7 +35,7 @@ export class Utils {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(queryObject)
+        body: JSON.stringify(queryObject),
       });
       return response;
     } catch (err) {
@@ -62,5 +58,16 @@ export class Utils {
     } catch (err) {
       console.log("In catch block, logging error:", err);
     }
+  }
+
+  static async requestResource(code: string) {
+    const response = await fetch(resourcesEndpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: code,
+    });
+    return response;
   }
 }

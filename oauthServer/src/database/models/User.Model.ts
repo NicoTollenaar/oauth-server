@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { scopes, IUser } from "../types/express/customTypes";
+import { scopes, IUser } from "../../types/customTypes";
 
 const userSchema = new mongoose.Schema<IUser>(
   {

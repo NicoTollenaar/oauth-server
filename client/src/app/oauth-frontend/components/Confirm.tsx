@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation";
-import { Utils } from "../utils/utils";
-import { redirect_uri } from "../constants/urls";
-import type { QueryObject } from "../types/customTypes";
+import { Utils } from "../../utils/utils";
+import { redirect_uri } from "../../constants/urls";
+import type { QueryObject } from "@/app/types/customTypes";
 
 interface ConfirmProps {
   queryObject: QueryObject;

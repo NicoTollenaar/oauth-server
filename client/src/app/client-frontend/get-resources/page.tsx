@@ -1,12 +1,8 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  redirect_uri,
-  authorisationEndpointFrontend,
-  tokenEndpoint,
-} from "../constants/urls";
-import { Utils } from "../utils/utils";
+import { authorisationEndpointFrontend } from "../../constants/urls";
+import { Utils } from "../../utils/utils";
 
 export default function GetResources() {
   const [resource, setResource] = useState<null | string>(null);
@@ -15,13 +11,6 @@ export default function GetResources() {
   const queryParams = useSearchParams();
 
   useEffect(() => {
-    // if (queryParams.get("confir")) {
-    //   requestAuthorisationCode();
-    //   return;
-    // } else if (queryParams.get("error")) {
-    //   setMessage("Confirmation failed");
-    //   return;
-    // }
     const queryCode = queryParams.get("code");
     const queryState = queryParams.get("state");
     const storageState = localStorage.getItem("state");
@@ -46,18 +35,14 @@ export default function GetResources() {
   }, []);
 
   async function getResource(code: string) {
-    const response = await fetch("/api/get-resources", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: code,
-    });
-    const { retrievedResource } = await response.json();
-    if (retrievedResource) {
-      setResource(retrievedResource);
+    const response = await Utils.requestResource(code);
+    const responseJSON = await response.json();
+    if (response.ok) {
+      setResource(responseJSON.resource);
+      setMessage("Succes!");
     } else {
-      setResource(`resource request failed: ${retrievedResource}`);
+      setResource(`request failed: ${responseJSON.resource}`);
+      setMessage("Oops, something went wrong");
     }
   }
 

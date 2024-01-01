@@ -5,8 +5,8 @@ import session from "express-session";
 import MongoStore from "connect-mongo";
 import mongoClientPromise from "../database/connectMongoDb";
 import cors from "cors";
-import oauthServerRoutes from "./oauthServerRoutes";
-import resourceServerRoutes from "./resourceServerRoutes";
+import oauthServerRoutes from "./routes/oauthServerRoutes";
+import resourceServerRoutes from "./routes/resourceServerRoutes";
 import { MongoClient } from "mongodb";
 
 const app = express();
@@ -34,7 +34,7 @@ app.get("/", (req, res) => {
   res.send("Hello, TypeScript with Express!");
 });
 
-app.use("/oauth-server-backend", oauthServerRoutes);
+app.use("/oauth-backend", oauthServerRoutes);
 app.use("/resource-server", resourceServerRoutes);
 
 app.listen(port, () => {
