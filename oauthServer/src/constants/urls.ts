@@ -1,9 +1,9 @@
-const baseUrlClient = "http://localhost:3000/client-frontend";
+const baseUrlClientFrontend = "http://localhost:3000/client-frontend";
 const baseUrlOauthBackend = "http://localhost:4000/oauth-backend";
 const baseUrlOauthFrontend = "http://localhost:3000/oauth-frontend";
 const baseUrlResourceServer = "http://localhost:4000/resource-server";
 
-export const redirect_uri = `${baseUrlClient}/get-resources`;
+export const redirect_uri = `${baseUrlClientFrontend}/get-resources`;
 
 export const confirmOrLoginEndpoint = `${baseUrlOauthBackend}/confirm-or-login`;
 export const loginEndpoint = `${baseUrlOauthBackend}/login`;

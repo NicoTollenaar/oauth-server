@@ -14,13 +14,13 @@ export default function Confirm({ queryObject }: ConfirmProps) {
       const response = await Utils.postConsentAndGetAuthorisationCode(
         queryObject
       );
-      const responseObject = await response?.json();
+      const responseJSON = await response?.json();
       if (response?.ok) {
         router.push(
-          `${redirect_uri}?code=${responseObject.authorisationCode}&state=${queryObject.state}`
+          `${redirect_uri}?code=${responseJSON.authorisationCode}&state=${queryObject.state}`
         );
       } else {
-        router.push(`${redirect_uri}?error=${responseObject.error}`);
+        router.push(`${redirect_uri}?error=${responseJSON.error}`);
       }
     } catch (error) {
       console.log("in catch block handleConfirm, logging error:", error);

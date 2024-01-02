@@ -19,7 +19,7 @@ export default function useResource() {
       return;
     }
     if (queryError) {
-      // setMessage(queryParams.get("error") as string);
+      setResourceMessage(queryParams.get("error") as string);
     } else if (storageState === queryState) {
       getAccessTokenAndResource(queryCode);
     } else {
@@ -29,14 +29,16 @@ export default function useResource() {
   });
 
   async function getAccessTokenAndResource(code: string) {
-    const response = await Utils.requestAccessTokenAndResource(code);
-    const responseJSON = await response.json();
-    if (response.ok) {
-      setResource(responseJSON.resource);
+    const retrievedResource = await Utils.requestAccessTokenAndResource(code);
+    console.log(
+      "In getAccessTokenAndResource logging retrievedResource:",
+      retrievedResource
+    );
+    if (retrievedResource) {
+      setResource(retrievedResource);
       setResourceMessage("Succes!");
     } else {
-      setResource(`request failed: ${responseJSON.resource}`);
-      setResourceMessage("Oops, something went wrong");
+      setResourceMessage(`request failed`);
     }
   }
 

@@ -10,11 +10,11 @@ export interface ICode {
 }
 
 const codeSchema = new Schema<ICode>({
-  authorisationCode: { type: String || null },
-  pkceCodeChallenge: { type: String || null },
-  accessToken: { type: String || null },
-  refreshToken: { type: String || null },
-  idToken: { type: String || null },
+  authorisationCode: { type: String || null, unique: true },
+  pkceCodeChallenge: { type: String || null, unique: true },
+  accessToken: { type: String || null, unique: true},
+  refreshToken: { type: String || null, unique: true },
+  idToken: { type: String || null, unique: true},
   userId: { type: Schema.Types.ObjectId, ref: "User" },
 });
 

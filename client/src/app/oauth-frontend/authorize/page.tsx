@@ -1,6 +1,6 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
-import useLoggedInStatus from "@/app/oauth-frontend/hooks/useLoggedInStatus";
+import useLoggedInStatus from "@/app/hooks/useLoggedInStatus";
 import Login from "../components/Login";
 import Confirm from "../components/Confirm";
 import { Utils } from "@/app/utils/utils";

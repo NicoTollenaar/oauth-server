@@ -46,24 +46,39 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
 
 router.post(
   "/oauth/token",
-  isLoggedIn,
   async (req: Request, res: Response, next: NextFunction) => {
     const { authorisationCode } = req.body;
+    console.log(
+      "in tokenendpoint, logging req.body:",
+      req.body
+    );
     try {
-      const dbUserCodes = await Code.findOne({ userId: req.session.user?.id });
-      if (dbUserCodes?.authorisationCode === authorisationCode) {
-        const accessToken = "access_token";
-        const dbUpdatedCUserCodes = await Code.findOneAndUpdate(
-          { userId: req.session.user?.id },
-          { authorisationCode: null, accessToken }
+      const dbUserCode = await Code.findOne({ authorisationCode });
+      console.log(
+        "In post /token route, logging dbUpdatedUserCode:",
+        dbUserCode
+      );
+      if (dbUserCode) {
+        const accessToken = crypto.randomUUID();
+        console.log("in tokenendpoint, logging accesstoken:", accessToken);
+        const dbUpdatedUserCode = await Code.findOneAndUpdate(
+          { authorisationCode },
+          { authorisationCode: null, accessToken },
+          { new: true, runValidators: true }
         );
-        return res.status(200).send(accessToken);
+        console.log(
+          "In post /token route, lgging dbUpdatedUserCode:",
+          dbUpdatedUserCode
+        );
+        return res.status(200).json({ accessToken });
       } else {
-        return res.status(401).send("Incorrect authorisation code");
+        return res.status(400).json({ error: "Database operation failed" });
       }
     } catch (error) {
       console.log("In catch block, logging error:", error);
-      return res.status(500).end();
+      return res
+        .status(400)
+        .json({ error: "Something went wrong in post /token route" });
     }
   }
 );
