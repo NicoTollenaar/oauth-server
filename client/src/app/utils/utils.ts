@@ -76,8 +76,8 @@ export class Utils {
   static isProfileQueryObject(queryObject: Record<string, string>) {
     const queryObjectKeys = Object.keys(queryObject);
     if (queryObjectKeys.length !== queryParameters.length) return false;
-    for (let key of queryObjectKeys) {
-      if (!queryParameters.includes(key)) return false;
+    for (let parameter of queryParameters) {
+      if (!queryObjectKeys.includes(parameter)) return false;
     }
     return true;
   }

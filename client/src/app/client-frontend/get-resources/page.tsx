@@ -10,7 +10,6 @@ export default function GetResources() {
   const router = useRouter();
   const queryParams = useSearchParams();
 
-  // question whether I need useEffect for this, try without
   useEffect(() => {
     const queryCode = queryParams.get("code");
     const queryState = queryParams.get("state");
@@ -28,7 +27,25 @@ export default function GetResources() {
       setMessage("someone tampered with state");
     }
     localStorage.removeItem("state");
-  }, []);
+  });
+  // useEffect(() => {
+  //   const queryCode = queryParams.get("code");
+  //   const queryState = queryParams.get("state");
+  //   const storageState = localStorage.getItem("state");
+  //   const queryError = queryParams.has("error");
+  //   if (!queryCode || !queryState || !storageState) {
+  //     localStorage.removeItem("state");
+  //     return;
+  //   }
+  //   if (queryError) {
+  //     setMessage(queryParams.get("error") as string);
+  //   } else if (storageState === queryState) {
+  //     getAccessTokenAndResource(queryCode);
+  //   } else {
+  //     setMessage("someone tampered with state");
+  //   }
+  //   localStorage.removeItem("state");
+  // }, []);
 
   // still need to swap authorisation code for accestoken
   async function getAccessTokenAndResource(code: string) {
@@ -43,18 +60,17 @@ export default function GetResources() {
     }
   }
 
-  function requestAuthorisationCode() {
+  function handleClick() {
+    // when implementing PKCE get code challenge and code method from client server
+    initiateOauthFlow();
+  }
+  function initiateOauthFlow() {
     const randomString = crypto.randomUUID();
     localStorage.setItem("state", randomString);
     const scope = "openId+profile+email";
     const queryString = Utils.buildQueryStringAuthorize(randomString, scope);
     const authorisationUrl = `${authorisationEndpointFrontend}?${queryString}`;
     router.push(authorisationUrl);
-  }
-
-  function handleClick() {
-    // when implementing PKCE get code challenge and code method from client server
-    requestAuthorisationCode();
   }
 
   return (
