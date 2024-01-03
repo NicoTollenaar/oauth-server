@@ -61,7 +61,7 @@ export async function saveConsent(
         $addToSet: {
           oauthConsents: {
             clientId: queryObject.client_id,
-            scope: scopeArray,
+            consentedScope: scopeArray,
             date: Date.now(),
           },
         },
@@ -92,6 +92,7 @@ export async function generateAndSaveCodes(
   const authorisationCode = crypto.randomUUID();
   req.authorisationCode = authorisationCode;
   const pkceCodeChallenge = queryObject.code_challenge;
+  const requestedScope = queryObject.scope.split(" ");
   let dbUpdatedCode: Document | null = null;
   let dbNewCode: Document | null = null;
   try {
@@ -100,12 +101,14 @@ export async function generateAndSaveCodes(
       dbUpdatedCode = await Code.findByIdAndUpdate(dbCode._id, {
         authorisationCode,
         pkceCodeChallenge,
+        requestedScope,
       });
     } else {
       const newCode = new Code({
         userId: req.session.user?.id,
         authorisationCode,
         pkceCodeChallenge,
+        requestedScope,
       });
       dbNewCode = await newCode.save();
     }

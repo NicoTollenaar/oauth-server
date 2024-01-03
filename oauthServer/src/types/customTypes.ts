@@ -14,9 +14,8 @@ export interface IUser {
   oauthConsents: [
     {
       clientId: String;
-      scope: ["openId" | "email" | "profile"];
+      consentedScope: ["openId" | "email" | "profile"];
       date: Date;
     }
   ];
 }
-

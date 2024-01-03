@@ -10,7 +10,9 @@ const userSchema = new mongoose.Schema<IUser>(
     oauthConsents: [
       {
         clientId: { type: String, required: true },
-        scope: [{ type: String, required: true, unique: true, enum: scopes }],
+        consentedScope: [
+          { type: String, required: true, unique: true, enum: scopes },
+        ],
         date: { type: Date, required: true },
       },
     ],

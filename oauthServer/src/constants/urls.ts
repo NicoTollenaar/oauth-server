@@ -5,11 +5,11 @@ const baseUrlResourceServer = "http://localhost:4000/resource-server";
 
 export const redirect_uri = `${baseUrlClientFrontend}/get-resources`;
 
-export const confirmOrLoginEndpoint = `${baseUrlOauthBackend}/confirm-or-login`;
+export const loggedInStatusEndpoint = `${baseUrlOauthBackend}/logged-in-status`;
 export const loginEndpoint = `${baseUrlOauthBackend}/login`;
 export const authorisationEndpointFrontend = `${baseUrlOauthFrontend}/authorize`;
 export const authorisationEndpointBackend = `${baseUrlOauthBackend}/authorize`;
 export const tokenEndpoint = `${baseUrlOauthBackend}/oauth/token`;
-export const loggedInStatusEndpoint = `${baseUrlOauthBackend}/logged-in-status`;
+export const userIdAndScopeEndpoint = `${baseUrlOauthBackend}/userId-and-scope`;
 
 export const resourcesEndpoint = `${baseUrlResourceServer}/get-resources`;

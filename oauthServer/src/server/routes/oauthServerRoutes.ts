@@ -48,10 +48,7 @@ router.post(
   "/oauth/token",
   async (req: Request, res: Response, next: NextFunction) => {
     const { authorisationCode } = req.body;
-    console.log(
-      "in tokenendpoint, logging req.body:",
-      req.body
-    );
+    console.log("in tokenendpoint, logging req.body:", req.body);
     try {
       const dbUserCode = await Code.findOne({ authorisationCode });
       console.log(
@@ -79,6 +76,36 @@ router.post(
       return res
         .status(400)
         .json({ error: "Something went wrong in post /token route" });
+    }
+  }
+);
+
+router.post(
+  "/userId-and-scope",
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { accessToken } = req.body;
+    console.log(
+      "In validate-access-token route, logging, accesstoken:",
+      accessToken
+    );
+    try {
+      const dbCode = await Code.findOne({ accessToken }).populate("userId");
+      console.log("In validate-access-token route, logging, dbCode:", dbCode);
+      if (dbCode) {
+        const { userId, requestedScope } = dbCode;
+        return res.status(200).json({ userId, requestedScope });
+      } else {
+        return res.json(400).json({ error: "Database request failed" });
+      }
+    } catch (error) {
+      console.log(
+        "In catch block validate access token route, logging error:",
+        error
+      );
+      return res.status(200).json({
+        error:
+          "Something went wring in catch block validate access token route",
+      });
     }
   }
 );
