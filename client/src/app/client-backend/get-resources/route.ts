@@ -6,10 +6,6 @@ import {
 
 export async function POST(req: Request) {
   const authorisationCode = await req.text();
-  console.log(
-    "in client backend post, logging authorisationCode:",
-    authorisationCode
-  );
   const retrievedResource = await getResource(authorisationCode);
   return Response.json({ retrievedResource, status: 200 });
 }
@@ -17,7 +13,6 @@ export async function POST(req: Request) {
 async function getResource(authorisationCode: string) {
   try {
     const accessToken = await getAccessToken(authorisationCode);
-    console.log("In getResource, logging accesstoken:", accessToken);
     if (!accessToken) {
       console.log("Unsuccessful accessToken request");
       return Response.json({
@@ -37,11 +32,6 @@ async function getResource(authorisationCode: string) {
 
 async function getAccessToken(authorisationCode: string) {
   const body = new URLSearchParams(`authorisationCode=${authorisationCode}`);
-  console.log("in getAccesToken function, logging body:", body);
-  console.log(
-    "in getAccesToken function, logging tokenEndpoint:",
-    tokenEndpoint
-  );
   try {
     const response = await fetch(tokenEndpoint, {
       method: "POST",
@@ -50,13 +40,9 @@ async function getAccessToken(authorisationCode: string) {
       },
       body,
     });
-    console.log(
-      "in client backend post/get-resources, getAccessToken, logging response:",
-      response
-    );
+
     if (response.ok) {
       const responseJSON = await response.json();
-      console.log("in getAccesToken function, logging responseJSON");
       const accessToken = responseJSON.accessToken;
       return accessToken;
     } else {

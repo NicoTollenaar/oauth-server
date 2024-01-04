@@ -30,10 +30,6 @@ export default function useResource() {
 
   async function getAccessTokenAndResource(code: string) {
     const retrievedResource = await Utils.requestAccessTokenAndResource(code);
-    console.log(
-      "In getAccessTokenAndResource logging retrievedResource:",
-      retrievedResource
-    );
     if (retrievedResource) {
       setResource(retrievedResource);
       setResourceMessage("Succes!");

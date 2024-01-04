@@ -10,14 +10,14 @@ export default class Utils {
     return hashedPassword;
   }
 
-  static async getUserIdAndRequestedScope(accesToken: string) {
+  static async getUserIdAndRequestedScope(accessToken: string) {
     try {
       const response = await fetch(userIdAndScopeEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ accesToken }),
+        body: JSON.stringify({ accessToken }),
       });
       if (response.ok) {
         const { userId, requestedScope } = await response.json();

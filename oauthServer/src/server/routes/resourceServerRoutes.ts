@@ -6,7 +6,7 @@ import { error } from "console";
 
 router.post("/get-resources", async (req, res) => {
   const { accessToken } = req.body;
-  console.log("in post /get-resources route, logging req.body:", req.body);
+  if (!accessToken) throw new Error("accessToken null or undefined");
   try {
     const responseObject = await Utils.getUserIdAndRequestedScope(accessToken);
     if (responseObject) {

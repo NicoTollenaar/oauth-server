@@ -15,7 +15,6 @@ export interface IUser {
     {
       clientId: String;
       consentedScope: ["openId" | "email" | "profile"];
-      date: Date;
     }
   ];
 }

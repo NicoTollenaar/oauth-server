@@ -9,11 +9,11 @@ const userSchema = new mongoose.Schema<IUser>(
     hashedPassword: { type: String, required: true },
     oauthConsents: [
       {
+        _id: false, // no ObjectId on subdocuments, otherwise addToSet does not work
         clientId: { type: String, required: true },
         consentedScope: [
           { type: String, required: true, unique: true, enum: scopes },
         ],
-        date: { type: Date, required: true },
       },
     ],
   },

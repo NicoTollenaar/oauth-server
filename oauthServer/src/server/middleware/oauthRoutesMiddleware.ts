@@ -58,12 +58,12 @@ export async function saveConsent(
     const dbUpdatedUser = await User.findByIdAndUpdate(
       req.session.user?.id,
       {
-        $addToSet: {
-          oauthConsents: {
-            clientId: queryObject.client_id,
-            consentedScope: scopeArray,
-            date: Date.now(),
-          },
+        $addToSet: { oauthConsents:
+            {
+              clientId: queryObject.client_id,
+              consentedScope: scopeArray,
+              // date: Date.now(),
+            },
         },
       },
       { new: true, runValidators: true }
