@@ -10,6 +10,6 @@ export const loginEndpoint = `${baseUrlOauthBackend}/login`;
 export const authorisationEndpointFrontend = `${baseUrlOauthFrontend}/authorize`;
 export const authorisationEndpointBackend = `${baseUrlOauthBackend}/authorize`;
 export const tokenEndpoint = `${baseUrlOauthBackend}/oauth/token`;
-export const userIdAndScopeEndpoint = `${baseUrlOauthBackend}/userId-and-scope`;
+export const introspectionEndpoint = `${baseUrlOauthBackend}/token_info`;
 
 export const resourcesEndpoint = `${baseUrlResourceServer}/get-resources`;

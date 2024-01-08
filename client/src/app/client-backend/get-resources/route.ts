@@ -64,7 +64,9 @@ async function retrieveResource(accessToken: string) {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: new URLSearchParams(`accessToken=${accessToken}`),
+      body: new URLSearchParams(
+        `accessToken=${accessToken}&clientId=${process.env.NEXT_PUBLIC_CLIENT_ID}&clientSecret=${process.env.NEXT_PUBLIC_CLIENT_SECRET}`
+      ),
     });
     if (response.ok) {
       const { retrievedResource } = await response.json();

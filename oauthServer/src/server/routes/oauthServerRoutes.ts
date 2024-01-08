@@ -6,6 +6,7 @@ import {
   saveConsent,
   generateAndSaveCodes,
   returnAuthorisationCode,
+  isClientAuthenticated,
 } from "../middleware/oauthRoutesMiddleware";
 import Code from "../../database/models/Code.Model";
 import { User } from "../../database/models/User.Model";
@@ -75,16 +76,19 @@ router.post(
 );
 
 router.post(
-  "/userId-and-scope",
+  "/token_info",
+  isClientAuthenticated,
   async (req: Request, res: Response, next: NextFunction) => {
-    const { accessToken } = req.body;
+    const { token } = req.body;
     try {
-      const dbCode = await Code.findOne({ accessToken }).populate("userId");
+      const dbCode = await Code.findOne({ accessToken: token }).populate(
+        "userId"
+      );
       if (dbCode) {
         const { userId, requestedScope } = dbCode;
         return res.status(200).json({ userId, requestedScope });
       } else {
-        return res.json(400).json({ error: "Database request failed" });
+        throw new Error("Database request failed");
       }
     } catch (error) {
       console.log(

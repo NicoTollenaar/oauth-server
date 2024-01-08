@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { userIdAndScopeEndpoint } from "../constants/urls";
+import { introspectionEndpoint } from "../constants/urls";
 
 export default class Utils {
   static async hashPassword(password: string) {
@@ -10,14 +10,22 @@ export default class Utils {
     return hashedPassword;
   }
 
-  static async getUserIdAndRequestedScope(accessToken: string) {
+  // see RFC 7662, OAuth 2.0 Token Introspection
+  static async introspectionRequest(
+    accessToken: string,
+    clientId: string,
+    clientSecret: string
+  ) {
     try {
-      const response = await fetch(userIdAndScopeEndpoint, {
+      const response = await fetch(introspectionEndpoint, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          Authorization: `Basic ${Buffer.from(
+            `${clientId}:${clientSecret}`
+          ).toString("base64")}`,
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: JSON.stringify({ accessToken }),
+        body: new URLSearchParams(`token=${accessToken}`),
       });
       if (response.ok) {
         const { userId, requestedScope } = await response.json();
@@ -26,11 +34,22 @@ export default class Utils {
         return null;
       }
     } catch (error) {
-      console.log(
-        "In catch block getUserIdAndRequestedScope, logging error:",
-        error
-      );
+      console.log("In catch block introspectionRequest, logging error:", error);
       return null;
     }
+  }
+
+  static extractCredentialsFromBasicAuthHeader(
+    authorizationHeader: string | undefined
+  ) {
+    if (authorizationHeader === undefined)
+      return { clientId: null, clientSecret: null };
+    const encodedCredentials = authorizationHeader.split(" ")[1];
+    const decodedCredentials = Buffer.from(
+      encodedCredentials,
+      "base64"
+    ).toString();
+    const [clientId, clientSecret] = decodedCredentials.split(":");
+    return { clientId, clientSecret };
   }
 }
