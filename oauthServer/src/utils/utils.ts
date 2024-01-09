@@ -4,6 +4,11 @@ import { introspectionEndpoint } from "../constants/urls";
 export default class Utils {
   static async hashString(stringToHash: string, existingSalt?: Buffer) {
     const salt = existingSalt ? existingSalt : crypto.randomBytes(16);
+    console.log(
+      "In hashstring, logging existingSalt and salt:",
+      existingSalt,
+      salt
+    );
     const hash = crypto.scryptSync(stringToHash, salt, 64).toString("hex");
     return { hash, salt };
   }

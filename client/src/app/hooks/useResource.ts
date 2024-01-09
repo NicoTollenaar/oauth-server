@@ -26,6 +26,8 @@ export default function useResource() {
       setResourceMessage("someone tampered with state");
     }
     localStorage.removeItem("state");
+    console.log("resource:", resource);
+    console.log("resourceMessage:", resourceMessage);
   });
 
   async function getAccessTokenAndResource(code: string) {

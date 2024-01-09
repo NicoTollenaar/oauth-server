@@ -39,6 +39,7 @@ export async function isValidRequest(
   next: NextFunction
 ) {
   const queryObject = req.body;
+  console.log("In isValidRequest, logging queryObject:", queryObject);
   const dbClient = await Client.findOne({ clientId: queryObject.client_id });
   const queryParametersValid = dbClient && queryObject.response_type === "code";
   if (queryParametersValid) {
@@ -144,12 +145,17 @@ export async function isClientAuthenticated(
   const authorizationHeader = req.headers.authorization;
   const { clientId, clientSecret } =
     Utils.extractCredentialsFromBasicAuthHeader(authorizationHeader);
-  console.log("In isClientAuthenticated, logging clientSecret:", clientSecret);
   const dbClient = await Client.findOne({ clientId }).populate(
     "hashedClientSecret"
   );
-  const {hash} = await Utils.hashString(clientSecret as string, dbClient?.hashedClientSecret.salt )
+  console.log("In isClientAuthenticated, logging dbCLient:", dbClient);
+  const { hash } = await Utils.hashString(
+    clientSecret as string,
+    dbClient?.hashedClientSecret.salt
+  );
+  console.log("In isClientAuthenticated, logging hash:", hash);
   const isHashEqual = dbClient?.hashedClientSecret.hash === hash;
+  console.log("In isClientAuthenticated, logging isHashEqual:", isHashEqual);
 
   // const dbClient = await Client.findOne({ clientId, hashedClientSecret });
   if (dbClient && isHashEqual) {
