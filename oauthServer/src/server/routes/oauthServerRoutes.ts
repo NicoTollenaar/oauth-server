@@ -33,7 +33,7 @@ router.post(
 
 router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
   const { firstName, lastName, email, password } = req.body;
-  const hashedPassword = await Utils.hashPassword(password);
+  // const hashedPassword = await Utils.hashString(password);
   try {
     // check login credentials more thoroughly
     const dbUser = await User.findOne({ email: "piet@email.com" });

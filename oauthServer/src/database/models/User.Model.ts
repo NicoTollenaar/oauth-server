@@ -6,7 +6,10 @@ const userSchema = new mongoose.Schema<IUser>(
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
-    hashedPassword: { type: String, required: true },
+    hashedPassword: {
+      hash: { type: String, required: true },
+      salt: {type: Buffer, required: true}
+    },
     oauthConsents: [
       {
         _id: false, // no ObjectId on subdocuments, otherwise addToSet does not work

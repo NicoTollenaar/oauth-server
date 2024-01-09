@@ -144,8 +144,15 @@ export async function isClientAuthenticated(
   const authorizationHeader = req.headers.authorization;
   const { clientId, clientSecret } =
     Utils.extractCredentialsFromBasicAuthHeader(authorizationHeader);
-  const dbClient = await Client.findOne({ clientId, clientSecret });
-  if (dbClient) {
+  console.log("In isClientAuthenticated, logging clientSecret:", clientSecret);
+  const dbClient = await Client.findOne({ clientId }).populate(
+    "hashedClientSecret"
+  );
+  const {hash} = await Utils.hashString(clientSecret as string, dbClient?.hashedClientSecret.salt )
+  const isHashEqual = dbClient?.hashedClientSecret.hash === hash;
+
+  // const dbClient = await Client.findOne({ clientId, hashedClientSecret });
+  if (dbClient && isHashEqual) {
     next();
   } else {
     return res.status(401).json({ error: "Unauthorized client" });

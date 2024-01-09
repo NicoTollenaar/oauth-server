@@ -2,12 +2,10 @@ import crypto from "crypto";
 import { introspectionEndpoint } from "../constants/urls";
 
 export default class Utils {
-  static async hashPassword(password: string) {
-    const salt = crypto.randomBytes(16);
-    const hashedPassword = crypto
-      .scryptSync(password, salt, 64)
-      .toString("hex");
-    return hashedPassword;
+  static async hashString(stringToHash: string, existingSalt?: Buffer) {
+    const salt = existingSalt ? existingSalt : crypto.randomBytes(16);
+    const hash = crypto.scryptSync(stringToHash, salt, 64).toString("hex");
+    return { hash, salt };
   }
 
   // see RFC 7662, OAuth 2.0 Token Introspection

@@ -10,7 +10,10 @@ export interface IUser {
   firstName: string;
   lastName: string;
   email: string;
-  hashedPassword: string;
+  hashedPassword: {
+    hash: string;
+    salt: Buffer;
+  };
   oauthConsents: [
     {
       clientId: String;

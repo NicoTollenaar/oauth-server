@@ -5,10 +5,15 @@ import Utils from "../../utils/utils";
 import { error } from "console";
 
 router.post("/get-resources", async (req, res) => {
+  // move clientId and clientSecret to Authorisation header using Basic Auth scheme
   const { accessToken, clientId, clientSecret } = req.body;
   if (!accessToken) throw new Error("accessToken null or undefined");
   try {
-    const responseObject = await Utils.introspectionRequest(accessToken, clientId, clientSecret);
+    const responseObject = await Utils.introspectionRequest(
+      accessToken,
+      clientId,
+      clientSecret
+    );
     if (responseObject) {
       const { userId, requestedScope } = responseObject;
       return res.status(200).json({
@@ -30,3 +35,6 @@ router.post("/get-resources", async (req, res) => {
 });
 
 export default router;
+
+// todo
+// move clientId and clientSecret to Authorisation header using Basic Auth scheme
