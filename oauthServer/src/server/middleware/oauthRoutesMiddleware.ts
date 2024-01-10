@@ -5,6 +5,7 @@ import { redirect_uri } from "../../constants/urls";
 import { User } from "../../database/models/User.Model";
 import { Document } from "mongodb";
 import Utils from "../../utils/utils";
+import ResourceServer from "../../database/models/ResourceServer.Model";
 
 export async function isLoggedOut(
   req: Request,
@@ -39,7 +40,6 @@ export async function isValidRequest(
   next: NextFunction
 ) {
   const queryObject = req.body;
-  console.log("In isValidRequest, logging queryObject:", queryObject);
   const dbClient = await Client.findOne({ clientId: queryObject.client_id });
   const queryParametersValid = dbClient && queryObject.response_type === "code";
   if (queryParametersValid) {
@@ -142,23 +142,45 @@ export async function isClientAuthenticated(
   res: Response,
   next: NextFunction
 ) {
-  const authorizationHeader = req.headers.authorization;
-  const { clientId, clientSecret } =
-    Utils.extractCredentialsFromBasicAuthHeader(authorizationHeader);
-  const dbClient = await Client.findOne({ clientId }).populate(
+  const { id, secret } = Utils.extractCredentialsFromBasicAuthHeader(
+    req.headers.authorization
+  );
+  const dbClient = await Client.findOne({ clientId: id }).populate(
     "hashedClientSecret"
   );
-  console.log("In isClientAuthenticated, logging dbCLient:", dbClient);
   const { hash } = await Utils.hashString(
-    clientSecret as string,
+    secret as string,
     dbClient?.hashedClientSecret.salt
   );
-  console.log("In isClientAuthenticated, logging hash:", hash);
   const isHashEqual = dbClient?.hashedClientSecret.hash === hash;
-  console.log("In isClientAuthenticated, logging isHashEqual:", isHashEqual);
 
   // const dbClient = await Client.findOne({ clientId, hashedClientSecret });
   if (dbClient && isHashEqual) {
+    next();
+  } else {
+    return res.status(401).json({ error: "Unauthorized client" });
+  }
+}
+export async function isResourceServerAuthenticated(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { id, secret } = Utils.extractCredentialsFromBasicAuthHeader(
+    req.headers.authorization
+  );
+  const dbResourceServer = await ResourceServer.findOne({
+    resourceServerId: id,
+  }).populate("hashedResourceServerSecret");
+  const { hash } = await Utils.hashString(
+    secret as string,
+    dbResourceServer?.hashedResourceServerSecret.salt
+  );
+  const isHashEqual =
+    dbResourceServer?.hashedResourceServerSecret.hash === hash;
+
+  // const dbResourceServer = await Client.findOne({ clientId, hashedClientSecret });
+  if (dbResourceServer && isHashEqual) {
     next();
   } else {
     return res.status(401).json({ error: "Unauthorized client" });

@@ -3,16 +3,17 @@ const router = express.Router();
 import Code from "../../database/models/Code.Model";
 import Utils from "../../utils/utils";
 import { error } from "console";
+import { isClientAuthenticated } from "../middleware/oauthRoutesMiddleware";
 
-router.post("/get-resources", async (req, res) => {
+router.post("/get-resources", isClientAuthenticated, async (req, res) => {
   // move clientId and clientSecret to Authorisation header using Basic Auth scheme
-  const { accessToken, clientId, clientSecret } = req.body;
-  if (!accessToken) throw new Error("accessToken null or undefined");
+  const { token } = req.body;
+  if (!token) throw new Error("accessToken null or undefined");
   try {
     const responseObject = await Utils.introspectionRequest(
-      accessToken,
-      clientId,
-      clientSecret
+      token,
+      process.env.RESOURCE_SERVER_ID as string,
+      process.env.RESOURCE_SERVER_SECRET as string
     );
     if (responseObject) {
       const { userId, requestedScope } = responseObject;
@@ -20,7 +21,7 @@ router.post("/get-resources", async (req, res) => {
         retrievedResource: JSON.stringify({ userId, requestedScope }),
       });
     } else {
-      return res.status(400).json({
+      return res.status(401).json({
         error:
           "failed to get user and requested scope from database with accestoken",
       });

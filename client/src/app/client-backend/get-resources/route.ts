@@ -59,14 +59,19 @@ async function getAccessToken(authorisationCode: string) {
 
 async function retrieveResource(accessToken: string) {
   try {
+    console.log(
+      "In retrieve resource, logging Buffer argument:",
+      `${process.env.NEXT_PUBLIC_CLIENT_ID}:${process.env.NEXT_PUBLIC_CLIENT_SECRET}`
+    );
     const response = await fetch(resourcesEndpoint, {
       method: "POST",
       headers: {
+        Authorization: `Basic ${Buffer.from(
+          `${process.env.NEXT_PUBLIC_CLIENT_ID}:${process.env.NEXT_PUBLIC_CLIENT_SECRET}`
+        ).toString("base64")}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: new URLSearchParams(
-        `accessToken=${accessToken}&clientId=${process.env.NEXT_PUBLIC_CLIENT_ID}&clientSecret=${process.env.NEXT_PUBLIC_CLIENT_SECRET}`
-      ),
+      body: new URLSearchParams(`token=${accessToken}`),
     });
     if (response.ok) {
       const { retrievedResource } = await response.json();

@@ -6,7 +6,7 @@ import {
   saveConsent,
   generateAndSaveCodes,
   returnAuthorisationCode,
-  isClientAuthenticated,
+  isResourceServerAuthenticated,
 } from "../middleware/oauthRoutesMiddleware";
 import Code from "../../database/models/Code.Model";
 import { User } from "../../database/models/User.Model";
@@ -77,7 +77,7 @@ router.post(
 
 router.post(
   "/token_info",
-  isClientAuthenticated,
+  isResourceServerAuthenticated,
   async (req: Request, res: Response, next: NextFunction) => {
     const { token } = req.body;
     try {
