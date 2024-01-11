@@ -43,8 +43,8 @@ async function getAccessToken(authorisationCode: string) {
 
     if (response.ok) {
       const responseJSON = await response.json();
-      const accessToken = responseJSON.accessToken;
-      return accessToken;
+      const accessTokenIdentifier = responseJSON.accessTokenIdentifier;
+      return accessTokenIdentifier;
     } else {
       return null;
     }
@@ -57,12 +57,8 @@ async function getAccessToken(authorisationCode: string) {
   }
 }
 
-async function retrieveResource(accessToken: string) {
+async function retrieveResource(accessTokenIdentifier: string) {
   try {
-    console.log(
-      "In retrieve resource, logging Buffer argument:",
-      `${process.env.NEXT_PUBLIC_CLIENT_ID}:${process.env.NEXT_PUBLIC_CLIENT_SECRET}`
-    );
     const response = await fetch(resourcesEndpoint, {
       method: "POST",
       headers: {
@@ -71,7 +67,7 @@ async function retrieveResource(accessToken: string) {
         ).toString("base64")}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: new URLSearchParams(`token=${accessToken}`),
+      body: new URLSearchParams(`token=${accessTokenIdentifier}`),
     });
     if (response.ok) {
       const { retrievedResource } = await response.json();

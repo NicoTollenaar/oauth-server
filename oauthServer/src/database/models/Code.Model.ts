@@ -4,20 +4,30 @@ import { scopes } from "../../types/customTypes";
 export interface ICode {
   authorisationCode: { type: String };
   pkceCodeChallenge: { type: String };
-  accessToken: { type: String };
+  accessToken: {
+    identifier: { type: String };
+    revoked: boolean;
+    expires: number;
+  };
   refreshToken: { type: String };
   idToken: { type: String };
-  userId: { type: Schema.Types.ObjectId; ref: "User" };
-  requestedScope: [{ type: String }];
+  userId: Schema.Types.ObjectId;
+  recipientClientId: string;
+  requestedScope: string[];
 }
 
 const codeSchema = new Schema<ICode>({
   authorisationCode: { type: String || null, unique: true },
   pkceCodeChallenge: { type: String || null, unique: true },
-  accessToken: { type: String || null, unique: true },
+  accessToken: {
+    identifier: { type: String, required: true },
+    revoked: { type: Boolean, required: true },
+    expires: { type: Number, required: true }, //unix timestamp indicating when token will expire.
+  },
   refreshToken: { type: String || null, unique: true },
   idToken: { type: String || null, unique: true },
   userId: { type: Schema.Types.ObjectId, ref: "User" },
+  recipientClientId: { type: String, required: true},
   requestedScope: [
     { type: String, required: true, unique: true, enum: scopes },
   ],

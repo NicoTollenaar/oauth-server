@@ -3,9 +3,9 @@ const router = express.Router();
 import Code from "../../database/models/Code.Model";
 import Utils from "../../utils/utils";
 import { error } from "console";
-import { isClientAuthenticated } from "../middleware/oauthRoutesMiddleware";
+import { isAuthenticatedClient } from "../middleware/oauthRoutesMiddleware";
 
-router.post("/get-resources", isClientAuthenticated, async (req, res) => {
+router.post("/get-resources", isAuthenticatedClient, async (req, res) => {
   // move clientId and clientSecret to Authorisation header using Basic Auth scheme
   const { token } = req.body;
   if (!token) throw new Error("accessToken null or undefined");
@@ -16,9 +16,8 @@ router.post("/get-resources", isClientAuthenticated, async (req, res) => {
       process.env.RESOURCE_SERVER_SECRET as string
     );
     if (responseObject) {
-      const { userId, requestedScope } = responseObject;
       return res.status(200).json({
-        retrievedResource: JSON.stringify({ userId, requestedScope }),
+        retrievedResource: JSON.stringify(responseObject),
       });
     } else {
       return res.status(401).json({

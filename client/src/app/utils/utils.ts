@@ -45,10 +45,9 @@ export class Utils {
         },
         body,
       });
-      console.log("In function postLoginRequest, logging response:", response);
       return response;
     } catch (err) {
-      console.log("In catch block, logging error:", err);
+      console.log("In catch block postLoginRequest, logging error:", err);
     }
   }
 

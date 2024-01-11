@@ -1,5 +1,7 @@
 import crypto from "crypto";
 import { introspectionEndpoint } from "../constants/urls";
+import Code from "../database/models/Code.Model";
+import { User } from "../database/models/User.Model";
 
 export default class Utils {
   static async hashString(stringToHash: string, existingSalt?: Buffer) {
@@ -26,8 +28,8 @@ export default class Utils {
         body: new URLSearchParams(`token=${token}`),
       });
       if (response.ok) {
-        const { userId, requestedScope } = await response.json();
-        return { userId, requestedScope };
+        const tokenInfo = await response.json();
+        return tokenInfo;
       } else {
         return null;
       }
@@ -48,5 +50,30 @@ export default class Utils {
     ).toString();
     const [id, secret] = decodedCredentials.split(":");
     return { id, secret };
+  }
+
+  static async validateAccesTokenAndGetInfo(token: string) {
+    try {
+      const dbCode = await Code.findOne({ "accessToken.identifier": token });
+      if (
+        !dbCode ||
+        dbCode?.accessToken.revoked ||
+        dbCode?.accessToken.expires <= Date.now()
+      )
+        return { active: false };
+      const dbUser = await User.findOne(dbCode.userId);
+      if (!dbUser) throw new Error("user not found");
+      return {
+        active: true,
+        scope: dbCode.requestedScope,
+        clientId: dbCode.recipientClientId,
+        username: dbUser.email,
+      };
+    } catch (error) {
+      console.log(
+        "In catch block validateAccesTokenAndGetInfo, logging error:",
+        error
+      );
+    }
   }
 }

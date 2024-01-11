@@ -6,7 +6,8 @@ import {
   saveConsent,
   generateAndSaveCodes,
   returnAuthorisationCode,
-  isResourceServerAuthenticated,
+  isAuthenticatedResourceServer,
+  isAuthenticatedClient,
 } from "../middleware/oauthRoutesMiddleware";
 import Code from "../../database/models/Code.Model";
 import { User } from "../../database/models/User.Model";
@@ -45,29 +46,40 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
   }
 });
 
+// still to authenticateClient and add appropriate authorization headers in request
 router.post(
   "/oauth/token",
+  // isAuthenticatedClient,
   async (req: Request, res: Response, next: NextFunction) => {
     const { authorisationCode } = req.body;
     try {
       const dbUserCode = await Code.findOne({ authorisationCode });
       if (dbUserCode) {
-        const accessToken = crypto.randomUUID();
+        const accessTokenIdentifier = crypto.randomUUID();
         const dbUpdatedUserCode = await Code.findOneAndUpdate(
           { authorisationCode },
-          { authorisationCode: null, accessToken },
+          {
+            authorisationCode: null,
+            accessToken: {
+              identifier: accessTokenIdentifier,
+              revoked: false,
+              expires: Date.now() + 60000, // expires in 60 seconds
+            },
+          },
           { new: true, runValidators: true }
         );
         if (dbUpdatedUserCode) {
-          return res.status(200).json({ accessToken });
+          return res.status(200).json({ accessTokenIdentifier });
         } else {
-          return res.status(400).json({ error: "Database operation failed" });
+          return res
+            .status(400)
+            .json({ error: "Database operation (update code) failed" });
         }
       } else {
-        return res.status(400).json({ error: "Database operation failed" });
+        return res.status(400).json({ error: "Authorization code not found" });
       }
     } catch (error) {
-      console.log("In catch block, logging error:", error);
+      console.log("In catch block /oauth/token, logging error:", error);
       return res
         .status(400)
         .json({ error: "Something went wrong in post /token route" });
@@ -77,19 +89,12 @@ router.post(
 
 router.post(
   "/token_info",
-  isResourceServerAuthenticated,
+  isAuthenticatedResourceServer,
   async (req: Request, res: Response, next: NextFunction) => {
     const { token } = req.body;
     try {
-      const dbCode = await Code.findOne({ accessToken: token }).populate(
-        "userId"
-      );
-      if (dbCode) {
-        const { userId, requestedScope } = dbCode;
-        return res.status(200).json({ userId, requestedScope });
-      } else {
-        throw new Error("Database request failed");
-      }
+      const tokenInfo = await Utils.validateAccesTokenAndGetInfo(token);
+      return res.status(200).json(tokenInfo);
     } catch (error) {
       console.log(
         "In catch block validate access token route, logging error:",
@@ -110,3 +115,4 @@ export default router;
 // check udemy whether query string redirect contains more than authorisation code and state
 // check login credential more thoroughly
 // add expiry time to authorisation code
+// still to authenticateClient and add appropriate authorization headers in request /oauth/token

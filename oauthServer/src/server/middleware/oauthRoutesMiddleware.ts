@@ -97,20 +97,35 @@ export async function generateAndSaveCodes(
   const requestedScope = queryObject.scope.split(" ");
   let dbUpdatedCode: Document | null = null;
   let dbNewCode: Document | null = null;
+  const inactiveAccessToken = {
+    identifier: "inactive",
+    revoked: true,
+    expires: 0,
+  };
   try {
-    const dbCode = await Code.findOne({ userId: req.session.user?.id });
+    const dbCode = await Code.findOne({
+      userId: req.session.user?.id,
+      recipientClientId: queryObject.client_id,
+    });
     if (dbCode) {
-      dbUpdatedCode = await Code.findByIdAndUpdate(dbCode._id, {
-        authorisationCode,
-        pkceCodeChallenge,
-        requestedScope,
-      });
+      dbUpdatedCode = await Code.findByIdAndUpdate(
+        dbCode._id,
+        {
+          authorisationCode,
+          pkceCodeChallenge,
+          requestedScope,
+          accessToken: inactiveAccessToken,
+        },
+        { new: true, runValidators: true }
+      );
     } else {
       const newCode = new Code({
         userId: req.session.user?.id,
         authorisationCode,
         pkceCodeChallenge,
         requestedScope,
+        recipientClientId: queryObject.client_id,
+        accessToken: inactiveAccessToken,
       });
       dbNewCode = await newCode.save();
     }
@@ -122,7 +137,7 @@ export async function generateAndSaveCodes(
         .json({ error: "failed to save codes in database" });
     }
   } catch (error) {
-    console.log("In catch block, logging error:", error);
+    console.log("In catch block generateAndSaveCodes, logging error:", error);
     return res.status(500).send(error);
   }
 }
@@ -137,7 +152,7 @@ export async function returnAuthorisationCode(
 
 // see RFC 7662, OAuth 2.0 Token Introspection
 // and RFC 6749, The OAuth 2.0 Authorization Framework,
-export async function isClientAuthenticated(
+export async function isAuthenticatedClient(
   req: Request,
   res: Response,
   next: NextFunction
@@ -161,7 +176,7 @@ export async function isClientAuthenticated(
     return res.status(401).json({ error: "Unauthorized client" });
   }
 }
-export async function isResourceServerAuthenticated(
+export async function isAuthenticatedResourceServer(
   req: Request,
   res: Response,
   next: NextFunction
