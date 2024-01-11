@@ -6,8 +6,8 @@ import {
 
 export async function POST(req: Request) {
   const authorisationCode = await req.text();
-  const retrievedResource = await getResource(authorisationCode);
-  return Response.json({ retrievedResource, status: 200 });
+  const response = await getResource(authorisationCode);
+  return Response.json(response);
 }
 
 async function getResource(authorisationCode: string) {
@@ -20,8 +20,8 @@ async function getResource(authorisationCode: string) {
         status: 400,
       });
     }
-    const retrievedResource = await retrieveResource(accessToken as string);
-    return retrievedResource;
+    const response = await retrieveResource(accessToken as string);
+    return response;
   } catch (error) {
     return Response.json({
       error: "error in catch block getResources",
@@ -36,6 +36,9 @@ async function getAccessToken(authorisationCode: string) {
     const response = await fetch(tokenEndpoint, {
       method: "POST",
       headers: {
+        Authorization: `Basic ${Buffer.from(
+          `${process.env.NEXT_PUBLIC_CLIENT_ID}:${process.env.NEXT_PUBLIC_CLIENT_SECRET}`
+        ).toString("base64")}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body,
@@ -69,20 +72,16 @@ async function retrieveResource(accessTokenIdentifier: string) {
       },
       body: new URLSearchParams(`token=${accessTokenIdentifier}`),
     });
-    if (response.ok) {
-      const { retrievedResource } = await response.json();
-      return retrievedResource;
-    } else {
-      console.log("Unsucessful resource request");
-      return Response.json({
-        error: "Resource request unsuccessful",
-        status: 400,
-      });
-    }
+    const responseObject = await response.json();
+    return responseObject;
   } catch (error) {
     console.log(
       "in catch block client api retrieveResource, logging error:",
       error
     );
+    return {
+      responseOk: false,
+      responseContent: { error: "Resource request unsuccessful", status: 400 },
+    };
   }
 }

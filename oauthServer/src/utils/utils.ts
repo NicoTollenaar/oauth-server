@@ -27,15 +27,17 @@ export default class Utils {
         },
         body: new URLSearchParams(`token=${token}`),
       });
-      if (response.ok) {
-        const tokenInfo = await response.json();
-        return tokenInfo;
-      } else {
-        return null;
-      }
+      const responseJSON = await response.json();
+      return { responseOk: response.ok, responseContent: responseJSON };
+      // if (response.ok) {
+      //   const tokenInfo = await response.json();
+      //   return tokenInfo;
+      // } else {
+      //   return null;
+      // }
     } catch (error) {
       console.log("In catch block introspectionRequest, logging error:", error);
-      return null;
+      return { responseOk: false, responseContent: null };
     }
   }
 

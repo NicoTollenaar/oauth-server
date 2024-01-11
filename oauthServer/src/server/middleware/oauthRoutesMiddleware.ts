@@ -64,7 +64,6 @@ export async function saveConsent(
           oauthConsents: {
             clientId: queryObject.client_id,
             consentedScope: scopeArray,
-            // date: Date.now(),
           },
         },
       },
@@ -194,10 +193,12 @@ export async function isAuthenticatedResourceServer(
   const isHashEqual =
     dbResourceServer?.hashedResourceServerSecret.hash === hash;
 
-  // const dbResourceServer = await Client.findOne({ clientId, hashedClientSecret });
   if (dbResourceServer && isHashEqual) {
     next();
   } else {
-    return res.status(401).json({ error: "Unauthorized client" });
+    return res.status(401).json({
+      error: "invalid_client",
+      error_description: "The client authentication was invalid",
+    });
   }
 }

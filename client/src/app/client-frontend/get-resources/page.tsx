@@ -27,7 +27,7 @@ export default function GetResources() {
         Get Resources - complete here!
       </button>
       <br />
-      <h1>Resource:{resource}</h1>
+      <h1>Resource:{resource && JSON.stringify(resource)}</h1>
       <br />
       {message && <h1>Normal message{message}</h1>}
       <br />

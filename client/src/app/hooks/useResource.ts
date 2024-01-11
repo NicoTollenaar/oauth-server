@@ -29,12 +29,12 @@ export default function useResource() {
   });
 
   async function getAccessTokenAndResource(code: string) {
-    const retrievedResource = await Utils.requestAccessTokenAndResource(code);
-    if (retrievedResource) {
-      setResource(retrievedResource);
+    const response = await Utils.requestAccessTokenAndResource(code);
+    setResource(response);
+    if (response.responseOk) {
       setResourceMessage("Succes!");
     } else {
-      setResourceMessage(`request failed`);
+      setResourceMessage(`Request failed`);
     }
   }
 

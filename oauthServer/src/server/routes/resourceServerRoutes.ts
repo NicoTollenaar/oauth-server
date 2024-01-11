@@ -10,26 +10,22 @@ router.post("/get-resources", isAuthenticatedClient, async (req, res) => {
   const { token } = req.body;
   if (!token) throw new Error("accessToken null or undefined");
   try {
-    const responseObject = await Utils.introspectionRequest(
+    const response = await Utils.introspectionRequest(
       token,
       process.env.RESOURCE_SERVER_ID as string,
       process.env.RESOURCE_SERVER_SECRET as string
     );
-    if (responseObject) {
-      return res.status(200).json({
-        retrievedResource: JSON.stringify(responseObject),
-      });
-    } else {
-      return res.status(401).json({
-        error:
-          "failed to get user and requested scope from database with accestoken",
-      });
-    }
+    const status = response.responseOk ? 200 : 401;
+    return res.status(status).json(response);
   } catch (error) {
     console.log("In catch block of get resources route, logging error:", error);
-    return res.status(400).json({
-      error:
-        "failed to get user and requested scope from database with accestoken",
+    // check correct error description
+    return res.status(401).json({
+      responseOk: false,
+      responseContent: {
+        error: "invalid_resource request",
+        error_description: "Bad resource request",
+      },
     });
   }
 });
@@ -38,3 +34,4 @@ export default router;
 
 // todo
 // move clientId and clientSecret to Authorisation header using Basic Auth scheme
+// check correct error description

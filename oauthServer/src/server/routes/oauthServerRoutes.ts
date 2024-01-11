@@ -49,7 +49,7 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
 // still to authenticateClient and add appropriate authorization headers in request
 router.post(
   "/oauth/token",
-  // isAuthenticatedClient,
+  isAuthenticatedClient,
   async (req: Request, res: Response, next: NextFunction) => {
     const { authorisationCode } = req.body;
     try {
@@ -63,7 +63,7 @@ router.post(
             accessToken: {
               identifier: accessTokenIdentifier,
               revoked: false,
-              expires: Date.now() + 60000, // expires in 60 seconds
+              expires: Date.now() + 2000, // expires in 60 seconds
             },
           },
           { new: true, runValidators: true }
@@ -100,7 +100,7 @@ router.post(
         "In catch block validate access token route, logging error:",
         error
       );
-      return res.status(400).json({
+      return res.status(401).json({
         error:
           "Something went wring in catch block validate access token route",
       });

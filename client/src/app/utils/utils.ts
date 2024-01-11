@@ -60,8 +60,8 @@ export class Utils {
       },
       body: code,
     });
-    const { retrievedResource } = await response.json();
-    return retrievedResource;
+    const responseJSON = await response.json();
+    return responseJSON;
   }
 
   static isProfileQueryObject(queryObject: Record<string, string>) {
