@@ -31,10 +31,10 @@ export default function useResource() {
   async function getAccessTokenAndResource(code: string) {
     const response = await Utils.requestAccessTokenAndResource(code);
     setResource(response);
-    if (response.responseOk) {
-      setResourceMessage("Succes!");
+    if (response.error) {
+      setResourceMessage(response.error_description);
     } else {
-      setResourceMessage(`Request failed`);
+      setResourceMessage(`Request succesful`);
     }
   }
 

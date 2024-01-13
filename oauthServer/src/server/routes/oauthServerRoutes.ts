@@ -12,8 +12,31 @@ import {
 import Code from "../../database/models/Code.Model";
 import { User } from "../../database/models/User.Model";
 import Utils from "../../utils/utils";
+import {
+  AccessTokenValidationError,
+  ActiveTokenInfo,
+  IInActiveTokenInfo,
+  InActiveTokenInfo,
+} from "../../types/customTypes";
+import TypePredicament from "../../utils/predicamentFunctions";
 
 const router = express.Router();
+
+// ---------     ONLY FOR RUNNING TESTRESPONSE.TS SCRIPT ------------
+// router.get("/test", isValidated, async (req: Request, res: Response) => {
+// return res.status(200).json({ message: "SUCCESFUL DESPITE ERROR CODE!" });
+// return res.status(401).json({ message: "status code 401" });
+// return res.status(500).json({ message: "status code 500" });
+// });
+
+// async function isValidated(req: Request, res: Response, next: NextFunction) {
+//   if (req.headers.authorization === "its me!") {
+//     next();
+//   } else {
+//     return res.status(401).json({ message: "unauthorized" });
+//   }
+// }
+// ---------------------------------------------------------------------------
 
 router.get("/logged-in-status", async (req: Request, res: Response) => {
   if (req.session.user) {
@@ -93,16 +116,27 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     const { token } = req.body;
     try {
-      const tokenInfo = await Utils.validateAccesTokenAndGetInfo(token);
-      return res.status(200).json(tokenInfo);
+      let validationResult:
+        | ActiveTokenInfo
+        | IInActiveTokenInfo
+        | AccessTokenValidationError = await Utils.validateAccesTokenAndGetInfo(
+        token
+      );
+      const status = "error" in validationResult ? 401 : 200;
+      if (
+        "clientId" in validationResult &&
+        validationResult.clientId !== req.clientId
+      )
+        validationResult = InActiveTokenInfo;
+      return res.status(status).json(validationResult);
     } catch (error) {
       console.log(
         "In catch block validate access token route, logging error:",
         error
       );
-      return res.status(401).json({
-        error:
-          "Something went wring in catch block validate access token route",
+      return res.status(401).json(<AccessTokenValidationError>{
+        error: "catch block error",
+        error_description: "Error in catch block in route /token_info",
       });
     }
   }

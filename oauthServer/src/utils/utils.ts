@@ -1,7 +1,20 @@
 import crypto from "crypto";
 import { introspectionEndpoint } from "../constants/urls";
-import Code from "../database/models/Code.Model";
+import Code, { ICode } from "../database/models/Code.Model";
 import { User } from "../database/models/User.Model";
+import {
+  ActiveTokenInfo,
+  InActiveTokenInfo,
+  AccessTokenValidationError,
+  IUser,
+  IInActiveTokenInfo,
+} from "../types/customTypes";
+
+export interface CatchError {
+  ok: boolean;
+  error: string;
+  error_description: string;
+}
 
 export default class Utils {
   static async hashString(stringToHash: string, existingSalt?: Buffer) {
@@ -27,17 +40,14 @@ export default class Utils {
         },
         body: new URLSearchParams(`token=${token}`),
       });
-      const responseJSON = await response.json();
-      return { responseOk: response.ok, responseContent: responseJSON };
-      // if (response.ok) {
-      //   const tokenInfo = await response.json();
-      //   return tokenInfo;
-      // } else {
-      //   return null;
-      // }
+      return response;
     } catch (error) {
       console.log("In catch block introspectionRequest, logging error:", error);
-      return { responseOk: false, responseContent: null };
+      return {
+        ok: false,
+        error: "catch block error",
+        error_description: "Error in catch block introspectionRequest",
+      };
     }
   }
 
@@ -54,28 +64,40 @@ export default class Utils {
     return { id, secret };
   }
 
-  static async validateAccesTokenAndGetInfo(token: string) {
+  static async validateAccesTokenAndGetInfo(token: string): Promise<ActiveTokenInfo | IInActiveTokenInfo | AccessTokenValidationError | > {
     try {
-      const dbCode = await Code.findOne({ "accessToken.identifier": token });
+      const dbCode: ICode | null = await Code.findOne({
+        "accessToken.identifier": token,
+      });
       if (
         !dbCode ||
         dbCode?.accessToken.revoked ||
         dbCode?.accessToken.expires <= Date.now()
       )
-        return { active: false };
-      const dbUser = await User.findOne(dbCode.userId);
-      if (!dbUser) throw new Error("user not found");
-      return {
-        active: true,
-        scope: dbCode.requestedScope,
-        clientId: dbCode.recipientClientId,
-        username: dbUser.email,
-      };
+        return InActiveTokenInfo;
+      const dbUser: IUser | null = await User.findOne(dbCode.userId);
+      if (dbUser) {
+        return <ActiveTokenInfo>{
+          active: true,
+          scope: dbCode.requestedScope,
+          clientId: dbCode.recipientClientId,
+          username: dbUser.email,
+        };
+      } else {
+        return <AccessTokenValidationError>{
+          error: "user not found",
+          error_description: "user not found when validating acces token",
+        };
+      }
     } catch (error) {
       console.log(
         "In catch block validateAccesTokenAndGetInfo, logging error:",
         error
       );
+      return <AccessTokenValidationError>{
+        error: "catch error",
+        error_description: "error in catch block validateAccessTokenandGetInfo",
+      };
     }
   }
 }

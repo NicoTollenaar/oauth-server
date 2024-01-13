@@ -159,6 +159,7 @@ export async function isAuthenticatedClient(
   const { id, secret } = Utils.extractCredentialsFromBasicAuthHeader(
     req.headers.authorization
   );
+  req.clientId = id;
   const dbClient = await Client.findOne({ clientId: id }).populate(
     "hashedClientSecret"
   );

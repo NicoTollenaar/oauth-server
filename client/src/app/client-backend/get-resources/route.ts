@@ -15,18 +15,18 @@ async function getResource(authorisationCode: string) {
     const accessToken = await getAccessToken(authorisationCode);
     if (!accessToken) {
       console.log("Unsuccessful accessToken request");
-      return Response.json({
-        error: "Unsuccessful accessToken request",
-        status: 400,
-      });
+      return {
+        error: "access token error",
+        error_description: "Unsuccessful accessToken request",
+      };
     }
     const response = await retrieveResource(accessToken as string);
     return response;
   } catch (error) {
-    return Response.json({
-      error: "error in catch block getResources",
-      status: 400,
-    });
+    return {
+      error: "catch error",
+      error_description: "error in catch block getResources",
+    };
   }
 }
 
@@ -45,18 +45,14 @@ async function getAccessToken(authorisationCode: string) {
     });
 
     if (response.ok) {
-      const responseJSON = await response.json();
-      const accessTokenIdentifier = responseJSON.accessTokenIdentifier;
+      const { accessTokenIdentifier } = await response.json();
       return accessTokenIdentifier;
     } else {
       return null;
     }
   } catch (error) {
     console.log("Error in catch block getAccessToken, error:", error);
-    return Response.json({
-      error: "Error in catch block getAccessToken",
-      status: 400,
-    });
+    return null;
   }
 }
 

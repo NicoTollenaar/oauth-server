@@ -21,3 +21,22 @@ export interface IUser {
     }
   ];
 }
+
+export interface ActiveTokenInfo {
+  active: boolean;
+  scope: string[];
+  clientId: string;
+  username: string;
+}
+export interface IInActiveTokenInfo {
+  active: false;
+}
+
+export const InActiveTokenInfo: IInActiveTokenInfo = {
+  active: false,
+};
+
+export interface AccessTokenValidationError {
+  error: string;
+  error_description: string;
+}

@@ -1,9 +1,8 @@
-import express from "express";
+import express, { Response } from "express";
 const router = express.Router();
-import Code from "../../database/models/Code.Model";
 import Utils from "../../utils/utils";
-import { error } from "console";
 import { isAuthenticatedClient } from "../middleware/oauthRoutesMiddleware";
+import { CatchError } from "../../utils/utils";
 
 router.post("/get-resources", isAuthenticatedClient, async (req, res) => {
   // move clientId and clientSecret to Authorisation header using Basic Auth scheme
@@ -15,8 +14,12 @@ router.post("/get-resources", isAuthenticatedClient, async (req, res) => {
       process.env.RESOURCE_SERVER_ID as string,
       process.env.RESOURCE_SERVER_SECRET as string
     );
-    const status = response.responseOk ? 200 : 401;
-    return res.status(status).json(response);
+    const status = response.ok ? 200 : 401;
+
+    const responseToSend = (response as CatchError).error
+      ? response
+      : (response as unknown as Response).json();
+    return res.status(status).json(responseToSend);
   } catch (error) {
     console.log("In catch block of get resources route, logging error:", error);
     // check correct error description
