@@ -28,15 +28,34 @@ export default function useResource() {
     localStorage.removeItem("state");
   });
 
-  async function getAccessTokenAndResource(code: string) {
-    const response = await Utils.requestAccessTokenAndResource(code);
-    setResource(response);
-    if (response.error) {
-      setResourceMessage(response.error_description);
-    } else {
-      setResourceMessage(`Request succesful`);
+  async function getAccessTokenAndResource(code: string): Promise<void> {
+    try {
+      const tokenInfo = await Utils.requestAccessTokenAndResource(code);
+      if (!tokenInfo) {
+        setResource(null);
+        setResourceMessage(
+          `error: failed request \n error_description: "calling requestAccessTokenAndResource failed"`
+        );
+      }
+      setResource(JSON.stringify(tokenInfo));
+
+      if ("error" in tokenInfo) {
+        setResourceMessage("Request failed");
+      } else if (tokenInfo.active) {
+        setResourceMessage("Request successful!");
+      } else {
+        setResourceMessage(`accesstoken expired, invalid or non-existent`);
+      }
+    } catch (error) {
+      console.log(
+        "Error in catch block getAccessTokenAndResource, logging error:",
+        error
+      );
+      setResource(null);
+      setResourceMessage(
+        `error: catch error \n error_description: Catch error in getAccessTokenAndResource`
+      );
     }
   }
-
   return { resource, resourceMessage };
 }

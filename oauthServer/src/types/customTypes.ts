@@ -36,7 +36,9 @@ export const InActiveTokenInfo: IInActiveTokenInfo = {
   active: false,
 };
 
-export interface AccessTokenValidationError {
+export interface OAuthError {
   error: string;
   error_description: string;
 }
+
+export type TokenInfo = ActiveTokenInfo | IInActiveTokenInfo | OAuthError;

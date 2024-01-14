@@ -1,36 +1,46 @@
+import { tokenEndpoint, resourcesEndpoint } from "@/app/constants/urls";
 import {
-  redirect_uri,
-  tokenEndpoint,
-  resourcesEndpoint,
-} from "@/app/constants/urls";
+  ActiveTokenInfo,
+  IInActiveTokenInfo,
+  OAuthError,
+  TokenInfo,
+} from "@/app/types/customTypes";
 
-export async function POST(req: Request) {
-  const authorisationCode = await req.text();
-  const response = await getResource(authorisationCode);
-  return Response.json(response);
+export async function POST(req: Request): Promise<Response> {
+  const authorisationCode: string = await req.text();
+  const resource: ActiveTokenInfo | IInActiveTokenInfo | OAuthError =
+    await getResource(authorisationCode);
+  const status: number = "error" in resource ? 401 : 200;
+  return Response.json(resource, { status });
 }
 
-async function getResource(authorisationCode: string) {
+async function getResource(authorisationCode: string): Promise<TokenInfo> {
   try {
-    const accessToken = await getAccessToken(authorisationCode);
+    const accessToken: string | null = await getAccessToken(authorisationCode);
     if (!accessToken) {
       console.log("Unsuccessful accessToken request");
-      return {
+      const oauthError: OAuthError = {
         error: "access token error",
         error_description: "Unsuccessful accessToken request",
       };
+      return oauthError;
     }
-    const response = await retrieveResource(accessToken as string);
-    return response;
+    const tokenInfo: TokenInfo = await retrieveResource(accessToken);
+    if (!tokenInfo) throw new Error("calling retrieveResource failed");
+    return tokenInfo;
   } catch (error) {
-    return {
+    console.log("In catch block getResource, logging error");
+    const oauthError: OAuthError = {
       error: "catch error",
-      error_description: "error in catch block getResources",
+      error_description: `Catch error in getResource: ${error}`,
     };
+    return oauthError;
   }
 }
 
-async function getAccessToken(authorisationCode: string) {
+async function getAccessToken(
+  authorisationCode: string
+): Promise<string | null> {
   const body = new URLSearchParams(`authorisationCode=${authorisationCode}`);
   try {
     const response = await fetch(tokenEndpoint, {
@@ -43,9 +53,9 @@ async function getAccessToken(authorisationCode: string) {
       },
       body,
     });
-
     if (response.ok) {
-      const { accessTokenIdentifier } = await response.json();
+      const { accessTokenIdentifier }: { accessTokenIdentifier: string } =
+        await response.json();
       return accessTokenIdentifier;
     } else {
       return null;
@@ -56,7 +66,9 @@ async function getAccessToken(authorisationCode: string) {
   }
 }
 
-async function retrieveResource(accessTokenIdentifier: string) {
+async function retrieveResource(
+  accessTokenIdentifier: string
+): Promise<TokenInfo> {
   try {
     const response = await fetch(resourcesEndpoint, {
       method: "POST",
@@ -68,16 +80,17 @@ async function retrieveResource(accessTokenIdentifier: string) {
       },
       body: new URLSearchParams(`token=${accessTokenIdentifier}`),
     });
-    const responseObject = await response.json();
-    return responseObject;
+    const tokenInfo: TokenInfo = await response.json();
+    return tokenInfo;
   } catch (error) {
     console.log(
       "in catch block client api retrieveResource, logging error:",
       error
     );
-    return {
-      responseOk: false,
-      responseContent: { error: "Resource request unsuccessful", status: 400 },
+    const oauthError: OAuthError = {
+      error: "catch error",
+      error_description: "Catch error in retrieveResource",
     };
+    return oauthError;
   }
 }

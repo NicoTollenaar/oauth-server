@@ -13,10 +13,11 @@ import Code from "../../database/models/Code.Model";
 import { User } from "../../database/models/User.Model";
 import Utils from "../../utils/utils";
 import {
-  AccessTokenValidationError,
+  OAuthError,
   ActiveTokenInfo,
   IInActiveTokenInfo,
   InActiveTokenInfo,
+  TokenInfo,
 } from "../../types/customTypes";
 import TypePredicament from "../../utils/predicamentFunctions";
 
@@ -73,39 +74,59 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
 router.post(
   "/oauth/token",
   isAuthenticatedClient,
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
     const { authorisationCode } = req.body;
+    if (!authorisationCode) {
+      const oauthError: OAuthError = {
+        error: "no authorization code",
+        error_description:
+          "token endpoint rejected request do to lacking authorisation code",
+      };
+      return res.status(401).json(oauthError);
+    }
     try {
       const dbUserCode = await Code.findOne({ authorisationCode });
-      if (dbUserCode) {
-        const accessTokenIdentifier = crypto.randomUUID();
-        const dbUpdatedUserCode = await Code.findOneAndUpdate(
-          { authorisationCode },
-          {
-            authorisationCode: null,
-            accessToken: {
-              identifier: accessTokenIdentifier,
-              revoked: false,
-              expires: Date.now() + 2000, // expires in 60 seconds
-            },
-          },
-          { new: true, runValidators: true }
-        );
-        if (dbUpdatedUserCode) {
-          return res.status(200).json({ accessTokenIdentifier });
-        } else {
-          return res
-            .status(400)
-            .json({ error: "Database operation (update code) failed" });
-        }
-      } else {
-        return res.status(400).json({ error: "Authorization code not found" });
+      if (!dbUserCode) {
+        const oauthError: OAuthError = {
+          error: "authorization code not found",
+          error_description:
+            "token endpoint rejected request do to invalid or non-existent authorization code",
+        };
+        return res.status(401).json(oauthError);
       }
+      const accessTokenIdentifier = crypto.randomUUID();
+      const dbUpdatedUserCode = await Code.findOneAndUpdate(
+        { authorisationCode },
+        {
+          authorisationCode: null,
+          accessToken: {
+            identifier: accessTokenIdentifier,
+            revoked: false,
+            expires: Date.now() + 2000, // expires in 60 seconds
+          },
+        },
+        { new: true, runValidators: true }
+      );
+      if (!dbUpdatedUserCode) {
+        const oauthError: OAuthError = {
+          error: "failed database operation",
+          error_description:
+            "updating database (exchanging authorization code for accesstoken) failed in token endpoint",
+        };
+        return res.status(401).json(oauthError);
+      }
+      return res.status(200).json({ accessTokenIdentifier });
     } catch (error) {
       console.log("In catch block /oauth/token, logging error:", error);
-      return res
-        .status(400)
-        .json({ error: "Something went wrong in post /token route" });
+      const oauthError: OAuthError = {
+        error: "catch error",
+        error_description: `Catch error in token endpoint: ${error}`,
+      };
+      return res.status(401).json(oauthError);
     }
   }
 );
@@ -113,28 +134,24 @@ router.post(
 router.post(
   "/token_info",
   isAuthenticatedResourceServer,
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { token } = req.body;
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const token: string = req.body.token;
     try {
-      let validationResult:
-        | ActiveTokenInfo
-        | IInActiveTokenInfo
-        | AccessTokenValidationError = await Utils.validateAccesTokenAndGetInfo(
+      let tokenInfo: TokenInfo = await Utils.validateAccesTokenAndGetInfo(
         token
       );
-      const status = "error" in validationResult ? 401 : 200;
-      if (
-        "clientId" in validationResult &&
-        validationResult.clientId !== req.clientId
-      )
-        validationResult = InActiveTokenInfo;
-      return res.status(status).json(validationResult);
+      const status = "error" in tokenInfo ? 401 : 200;
+      return res.status(status).json(tokenInfo);
     } catch (error) {
       console.log(
         "In catch block validate access token route, logging error:",
         error
       );
-      return res.status(401).json(<AccessTokenValidationError>{
+      return res.status(401).json({
         error: "catch block error",
         error_description: "Error in catch block in route /token_info",
       });

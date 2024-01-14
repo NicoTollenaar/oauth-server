@@ -11,3 +11,21 @@ export interface QueryObject {
   code_challenge: string;
   code_challenge_method: string;
 }
+
+export interface ActiveTokenInfo {
+  active: boolean;
+  scope: string[];
+  clientId: string;
+  username: string;
+}
+export interface IInActiveTokenInfo {
+  active: false;
+}
+
+export interface OAuthError {
+  error: string;
+  error_description: string;
+}
+
+export type TokenInfo = ActiveTokenInfo | IInActiveTokenInfo | OAuthError;
+

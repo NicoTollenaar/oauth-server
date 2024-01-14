@@ -3,18 +3,11 @@ import { introspectionEndpoint } from "../constants/urls";
 import Code, { ICode } from "../database/models/Code.Model";
 import { User } from "../database/models/User.Model";
 import {
-  ActiveTokenInfo,
   InActiveTokenInfo,
-  AccessTokenValidationError,
+  OAuthError,
   IUser,
-  IInActiveTokenInfo,
+  TokenInfo,
 } from "../types/customTypes";
-
-export interface CatchError {
-  ok: boolean;
-  error: string;
-  error_description: string;
-}
 
 export default class Utils {
   static async hashString(stringToHash: string, existingSalt?: Buffer) {
@@ -43,11 +36,11 @@ export default class Utils {
       return response;
     } catch (error) {
       console.log("In catch block introspectionRequest, logging error:", error);
-      return {
-        ok: false,
+      const oauthError: OAuthError = {
         error: "catch block error",
-        error_description: "Error in catch block introspectionRequest",
+        error_description: `Error in catch block introspectionRequest: ${error}`,
       };
+      return oauthError;
     }
   }
 
@@ -64,27 +57,26 @@ export default class Utils {
     return { id, secret };
   }
 
-  static async validateAccesTokenAndGetInfo(token: string): Promise<ActiveTokenInfo | IInActiveTokenInfo | AccessTokenValidationError | > {
+  static async validateAccesTokenAndGetInfo(token: string): Promise<TokenInfo> {
     try {
       const dbCode: ICode | null = await Code.findOne({
         "accessToken.identifier": token,
       });
-      if (
-        !dbCode ||
-        dbCode?.accessToken.revoked ||
-        dbCode?.accessToken.expires <= Date.now()
-      )
+      const hasAccessTokenExpired = dbCode?.accessToken?.expires
+        ? dbCode?.accessToken?.expires <= Date.now()
+        : true;
+      if (!dbCode || dbCode?.accessToken.revoked || hasAccessTokenExpired)
         return InActiveTokenInfo;
       const dbUser: IUser | null = await User.findOne(dbCode.userId);
       if (dbUser) {
-        return <ActiveTokenInfo>{
+        return {
           active: true,
           scope: dbCode.requestedScope,
           clientId: dbCode.recipientClientId,
           username: dbUser.email,
         };
       } else {
-        return <AccessTokenValidationError>{
+        return {
           error: "user not found",
           error_description: "user not found when validating acces token",
         };
@@ -94,7 +86,7 @@ export default class Utils {
         "In catch block validateAccesTokenAndGetInfo, logging error:",
         error
       );
-      return <AccessTokenValidationError>{
+      return {
         error: "catch error",
         error_description: "error in catch block validateAccessTokenandGetInfo",
       };

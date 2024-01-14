@@ -1,3 +1,5 @@
+
+
 import {
   OAuthError,
   ActiveTokenInfo,
@@ -14,5 +16,11 @@ export default class TypePredicament {
     object: Response | ActiveTokenInfo | IInActiveTokenInfo | OAuthError
   ): object is OAuthError {
     return "error_description" in object;
+  }
+  
+  static isOAuthError(
+    object: ActiveTokenInfo | IInActiveTokenInfo | OAuthError
+  ): object is OAuthError {
+    return "error" in object;
   }
 }

@@ -6,7 +6,12 @@ import {
   clientBackendGetResourcesEndpoint,
 } from "../constants/urls";
 import type { URLSearchParams } from "url";
-import { LoginFormData, QueryObject } from "../types/customTypes";
+import {
+  LoginFormData,
+  OAuthError,
+  QueryObject,
+  TokenInfo,
+} from "../types/customTypes";
 import { queryParameters } from "../constants/otherConstants";
 
 export class Utils {
@@ -52,16 +57,28 @@ export class Utils {
   }
 
   // still need to swap authorisation code for accestoken
-  static async requestAccessTokenAndResource(code: string) {
-    const response = await fetch(clientBackendGetResourcesEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: code,
-    });
-    const responseJSON = await response.json();
-    return responseJSON;
+  static async requestAccessTokenAndResource(code: string): Promise<TokenInfo> {
+    try {
+      const response = await fetch(clientBackendGetResourcesEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: code,
+      });
+      const tokenInfo: TokenInfo = await response.json();
+      return tokenInfo;
+    } catch (error) {
+      console.log(
+        "catch error in requestAccesTokenAndResource, logging error:",
+        error
+      );
+      const oauthError: OAuthError = {
+        error: "catch error",
+        error_description: `Catch error in requestAccessTokenAndResource: ${error}`,
+      };
+      return oauthError;
+    }
   }
 
   static isProfileQueryObject(queryObject: Record<string, string>) {
