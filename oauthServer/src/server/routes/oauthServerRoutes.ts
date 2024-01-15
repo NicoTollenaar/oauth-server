@@ -106,7 +106,7 @@ router.post(
           accessToken: {
             identifier: accessTokenIdentifier,
             revoked: false,
-            expires: Date.now() + 2000, // expires in 60 seconds
+            expires: Date.now() + 2000, // expires in 2 seconds
           },
         },
         { new: true, runValidators: true }

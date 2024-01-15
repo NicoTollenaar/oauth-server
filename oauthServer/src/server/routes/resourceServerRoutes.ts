@@ -13,7 +13,7 @@ import {
 router.post(
   "/get-resources",
   isAuthenticatedClient,
-  async (req, res): Promise<Response> => {
+  async (req, res) /*: Promise<Response> */ => {
     // move clientId and clientSecret to Authorisation header using Basic Auth scheme
     const token: string = req.body.token;
     if (!token) throw new Error("accessToken null or undefined");

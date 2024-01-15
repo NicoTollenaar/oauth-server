@@ -8,8 +8,7 @@ import {
 
 export async function POST(req: Request): Promise<Response> {
   const authorisationCode: string = await req.text();
-  const resource: ActiveTokenInfo | IInActiveTokenInfo | OAuthError =
-    await getResource(authorisationCode);
+  const resource: TokenInfo = await getResource(authorisationCode);
   const status: number = "error" in resource ? 401 : 200;
   return Response.json(resource, { status });
 }
@@ -26,6 +25,7 @@ async function getResource(authorisationCode: string): Promise<TokenInfo> {
       return oauthError;
     }
     const tokenInfo: TokenInfo = await retrieveResource(accessToken);
+    console.log("TokenInfo:", tokenInfo);
     if (!tokenInfo) throw new Error("calling retrieveResource failed");
     return tokenInfo;
   } catch (error) {
