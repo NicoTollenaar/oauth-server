@@ -25,7 +25,6 @@ async function getResource(authorisationCode: string): Promise<TokenInfo> {
       return oauthError;
     }
     const tokenInfo: TokenInfo = await retrieveResource(accessToken);
-    console.log("TokenInfo:", tokenInfo);
     if (!tokenInfo) throw new Error("calling retrieveResource failed");
     return tokenInfo;
   } catch (error) {
