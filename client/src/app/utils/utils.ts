@@ -5,7 +5,7 @@ import {
   loginEndpoint,
   clientBackendGetResourcesEndpoint,
 } from "../constants/urls";
-import type { URLSearchParams } from "url";
+import { URLSearchParams } from "url";
 import {
   LoginFormData,
   OAuthError,
@@ -99,13 +99,14 @@ export class Utils {
   }
 
   static buildQueryStringAuthorize(randomState: string, scope: string) {
+    const codeChallenge = crypto.randomUUID();
     const queryString =
       `response_type=code&` +
       `scope=${scope}&` +
       `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&` +
       `state=${randomState}&` +
       `redirect_uri=${redirect_uri}&` +
-      `code_challenge=code_challenge_not_yet_used&` +
+      `code_challenge=${codeChallenge}` +
       `&code_challenge_method=S256`;
     return queryString;
   }
@@ -113,3 +114,4 @@ export class Utils {
 
 // todo
 // still need to swap authorisation code for accestoken
+// still to implement pkce

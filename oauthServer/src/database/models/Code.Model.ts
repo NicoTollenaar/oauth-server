@@ -13,6 +13,7 @@ export interface ICode {
   idToken: { type: String };
   userId: Schema.Types.ObjectId;
   recipientClientId: string;
+  redirectUri: string;
   requestedScope: string[];
 }
 
@@ -28,6 +29,7 @@ const codeSchema = new Schema<ICode>({
   idToken: { type: String || null, unique: true },
   userId: { type: Schema.Types.ObjectId, ref: "User" },
   recipientClientId: { type: String, required: true},
+  redirectUri: {type: String, required: true},
   requestedScope: [
     { type: String, required: true, unique: true, enum: scopes },
   ],

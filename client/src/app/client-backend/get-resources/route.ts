@@ -5,6 +5,7 @@ import {
   OAuthError,
   TokenInfo,
 } from "@/app/types/customTypes";
+import { redirect_uri } from "@/app/constants/urls";
 
 export async function POST(req: Request): Promise<Response> {
   const authorisationCode: string = await req.text();
@@ -40,7 +41,12 @@ async function getResource(authorisationCode: string): Promise<TokenInfo> {
 async function getAccessToken(
   authorisationCode: string
 ): Promise<string | null> {
-  const body = new URLSearchParams(`authorisationCode=${authorisationCode}`);
+  const body = new URLSearchParams({
+    code: authorisationCode,
+    grant_type: "authorization_code",
+    redirect_uri,
+    code_verifiier: "", //still todo
+  });
   try {
     const response = await fetch(tokenEndpoint, {
       method: "POST",

@@ -8,6 +8,7 @@ import {
   returnAuthorisationCode,
   isAuthenticatedResourceServer,
   isAuthenticatedClient,
+  validateRequestParameters,
 } from "../middleware/oauthRoutesMiddleware";
 import Code from "../../database/models/Code.Model";
 import { User } from "../../database/models/User.Model";
@@ -19,7 +20,6 @@ import {
   InActiveTokenInfo,
   TokenInfo,
 } from "../../types/customTypes";
-import TypePredicament from "../../utils/predicamentFunctions";
 
 const router = express.Router();
 
@@ -67,6 +67,11 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
     return res.status(200).end();
   } catch (error) {
     console.log("in catch block, /login route, logging error:", error);
+    const oauthError: OAuthError = {
+      error: "Catch error",
+      error_description: `Catch error in isLoggedOut: ${error}`,
+    };
+    return res.status(401).json(oauthError);
   }
 });
 
@@ -74,13 +79,14 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
 router.post(
   "/oauth/token",
   isAuthenticatedClient,
+  validateRequestParameters,
   async (
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<Response> => {
-    const { authorisationCode } = req.body;
-    if (!authorisationCode) {
+    const { code } = req.body;
+    if (!code) {
       const oauthError: OAuthError = {
         error: "no authorization code",
         error_description:
@@ -89,7 +95,7 @@ router.post(
       return res.status(401).json(oauthError);
     }
     try {
-      const dbUserCode = await Code.findOne({ authorisationCode });
+      const dbUserCode = await Code.findOne({ authorisationCode: code });
       if (!dbUserCode) {
         const oauthError: OAuthError = {
           error: "authorization code not found",
@@ -100,7 +106,7 @@ router.post(
       }
       const accessTokenIdentifier = crypto.randomUUID();
       const dbUpdatedUserCode = await Code.findOneAndUpdate(
-        { authorisationCode },
+        { authorisationCode: code },
         {
           authorisationCode: null,
           accessToken: {

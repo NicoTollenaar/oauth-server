@@ -6,6 +6,7 @@ import { User } from "../../database/models/User.Model";
 import { Document } from "mongodb";
 import Utils from "../../utils/utils";
 import ResourceServer from "../../database/models/ResourceServer.Model";
+import { OAuthError } from "../../types/customTypes";
 
 export async function isLoggedOut(
   req: Request,
@@ -105,6 +106,7 @@ export async function generateAndSaveCodes(
     const dbCode = await Code.findOne({
       userId: req.session.user?.id,
       recipientClientId: queryObject.client_id,
+      redirectUri: queryObject.redirect_uri,
     });
     if (dbCode) {
       dbUpdatedCode = await Code.findByIdAndUpdate(
@@ -125,15 +127,18 @@ export async function generateAndSaveCodes(
         requestedScope,
         recipientClientId: queryObject.client_id,
         accessToken: inactiveAccessToken,
+        redirectUri: queryObject.redirect_uri,
       });
       dbNewCode = await newCode.save();
     }
     if (dbUpdatedCode || dbNewCode) {
       next();
     } else if (!dbUpdatedCode && !dbNewCode) {
-      return res
-        .status(400)
-        .json({ error: "failed to save codes in database" });
+      const oauthError: OAuthError = {
+        error: "database operation error",
+        error_description: "failed to save codes in database",
+      };
+      return res.status(400).json(oauthError);
     }
   } catch (error) {
     console.log("In catch block generateAndSaveCodes, logging error:", error);
@@ -201,5 +206,44 @@ export async function isAuthenticatedResourceServer(
       error: "invalid_client",
       error_description: "The client authentication was invalid",
     });
+  }
+}
+
+export async function validateRequestParameters(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const {
+    code,
+    grant_type,
+    client_id,
+    redirect_uri,
+  }: {
+    code: string;
+    grant_type: string;
+    client_id: string;
+    redirect_uri: string;
+  } = req.body;
+  try {
+    const dbCode = await Code.findOne({ authorisationCode: code });
+    if (!dbCode) throw new Error("invalid code (not found)");
+    if (client_id !== dbCode.recipientClientId)
+      throw new Error("invalid client_id, client unauthorized");
+    if (redirect_uri !== dbCode.redirectUri)
+      throw new Error("invalid redirect_uri");
+    if (grant_type !== "authorization_code")
+      throw new Error("invalid grant_type");
+    next();
+  } catch (error) {
+    console.log(
+      "In catch block validateRequestParameters, logging error:",
+      error
+    );
+    const oauthError: OAuthError = {
+      error: "Catch error",
+      error_description: `Catch error in validateRequestParameters: ${error}`,
+    };
+    return res.json(400).json(oauthError);
   }
 }
