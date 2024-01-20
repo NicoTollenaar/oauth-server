@@ -68,8 +68,9 @@ export async function saveConsent(
           },
         },
       },
-      { new: true, runValidators: true }
+      { new: true }
     );
+    dbUpdatedUser?.validateSync();
     if (dbUpdatedUser) {
       next();
     } else {
@@ -97,11 +98,11 @@ export async function generateAndSaveCodes(
   const requestedScope = queryObject.scope.split(" ");
   let dbUpdatedCode: Document | null = null;
   let dbNewCode: Document | null = null;
-  const inactiveAccessToken = {
-    identifier: "inactive",
-    revoked: true,
-    expires: 0,
-  };
+  // const inactiveAccessToken = {
+  //   identifier: "inactive",
+  //   revoked: true,
+  //   expires: 0,
+  // };
   try {
     const dbCode = await Code.findOne({
       userId: req.session.user?.id,
@@ -115,10 +116,11 @@ export async function generateAndSaveCodes(
           authorisationCode,
           pkceCodeChallenge,
           requestedScope,
-          accessToken: inactiveAccessToken,
+          // accessToken: inactiveAccessToken,
         },
-        { new: true, runValidators: true }
+        { new: true } // runValidators option not working
       );
+      dbCode.validateSync(); // because runValidators option not working
     } else {
       const newCode = new Code({
         userId: req.session.user?.id,
@@ -126,7 +128,7 @@ export async function generateAndSaveCodes(
         pkceCodeChallenge,
         requestedScope,
         recipientClientId: queryObject.client_id,
-        accessToken: inactiveAccessToken,
+        // accessToken: inactiveAccessToken,
         redirectUri: queryObject.redirect_uri,
       });
       dbNewCode = await newCode.save();

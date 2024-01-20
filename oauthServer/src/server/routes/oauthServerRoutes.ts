@@ -115,8 +115,10 @@ router.post(
             expires: Date.now() + 2000, // expires in 2 seconds
           },
         },
-        { new: true, runValidators: true }
+        { new: true }
       );
+      if (dbUpdatedUserCode?.validateSync())
+        throw new Error("Mongoose validation error");
       if (!dbUpdatedUserCode) {
         const oauthError: OAuthError = {
           error: "failed database operation",

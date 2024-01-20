@@ -65,7 +65,7 @@ export default class Utils {
       const hasAccessTokenExpired = dbCode?.accessToken?.expires
         ? dbCode?.accessToken?.expires <= Date.now()
         : true;
-      if (!dbCode || dbCode?.accessToken.revoked || hasAccessTokenExpired)
+      if (!dbCode || dbCode?.accessToken?.revoked || hasAccessTokenExpired)
         return InActiveTokenInfo;
       const dbUser: IUser | null = await User.findOne(dbCode.userId);
       if (dbUser) {

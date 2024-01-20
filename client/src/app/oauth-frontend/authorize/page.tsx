@@ -12,7 +12,6 @@ export default function Authorize() {
   const isLoggedIn = useLoggedInStatus();
   const queryParams = useSearchParams();
   let queryObject = Utils.getQueryObject(queryParams);
-
   if (!Utils.isProfileQueryObject(queryObject))
     router.push(`${redirect_uri}?error=incorrect query parameters`);
 

@@ -6,6 +6,7 @@ import {
   TokenInfo,
 } from "@/app/types/customTypes";
 import { redirect_uri } from "@/app/constants/urls";
+import TypePredicament from "@/app/utils/predicamentFunctions";
 
 export async function POST(req: Request): Promise<Response> {
   const authorisationCode: string = await req.text();
@@ -16,20 +17,19 @@ export async function POST(req: Request): Promise<Response> {
 
 async function getResource(authorisationCode: string): Promise<TokenInfo> {
   try {
-    const accessToken: string | null = await getAccessToken(authorisationCode);
-    if (!accessToken) {
+    const accessToken: string | OAuthError = await getAccessToken(
+      authorisationCode
+    );
+    if (typeof accessToken !== "string") {
       console.log("Unsuccessful accessToken request");
-      const oauthError: OAuthError = {
-        error: "access token error",
-        error_description: "Unsuccessful accessToken request",
-      };
+      const oauthError: OAuthError = accessToken;
       return oauthError;
     }
     const tokenInfo: TokenInfo = await retrieveResource(accessToken);
     if (!tokenInfo) throw new Error("calling retrieveResource failed");
     return tokenInfo;
   } catch (error) {
-    console.log("In catch block getResource, logging error");
+    console.log("In catch block getResource, logging error:", error);
     const oauthError: OAuthError = {
       error: "catch error",
       error_description: `Catch error in getResource: ${error}`,
@@ -40,10 +40,11 @@ async function getResource(authorisationCode: string): Promise<TokenInfo> {
 
 async function getAccessToken(
   authorisationCode: string
-): Promise<string | null> {
+): Promise<string | OAuthError> {
   const body = new URLSearchParams({
     code: authorisationCode,
     grant_type: "authorization_code",
+    client_id: process.env.NEXT_PUBLIC_CLIENT_ID as string,
     redirect_uri,
     code_verifiier: "", //still todo
   });
@@ -63,11 +64,16 @@ async function getAccessToken(
         await response.json();
       return accessTokenIdentifier;
     } else {
-      return null;
+      const oauthError: OAuthError = await response.json();
+      return oauthError;
     }
   } catch (error) {
     console.log("Error in catch block getAccessToken, error:", error);
-    return null;
+    const oauthError: OAuthError = {
+      error: "Catch error",
+      error_description: `Catch error in getAccessToken: ${error}`,
+    };
+    return oauthError;
   }
 }
 
