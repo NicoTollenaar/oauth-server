@@ -58,6 +58,7 @@ export class Utils {
 
   // still need to swap authorisation code for accestoken
   static async requestAccessTokenAndResource(code: string): Promise<TokenInfo> {
+    console.log("In requestAccessTokenAndResource");
     try {
       const response = await fetch(clientBackendGetResourcesEndpoint, {
         method: "POST",

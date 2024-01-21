@@ -98,11 +98,6 @@ export async function generateAndSaveCodes(
   const requestedScope = queryObject.scope.split(" ");
   let dbUpdatedCode: Document | null = null;
   let dbNewCode: Document | null = null;
-  // const inactiveAccessToken = {
-  //   identifier: "inactive",
-  //   revoked: true,
-  //   expires: 0,
-  // };
   try {
     const dbCode = await Code.findOne({
       userId: req.session.user?.id,
@@ -113,22 +108,26 @@ export async function generateAndSaveCodes(
       dbUpdatedCode = await Code.findByIdAndUpdate(
         dbCode._id,
         {
-          authorisationCode,
+          authorisationCode: {
+            identifier: authorisationCode,
+            expires: Date.now() + 2000,
+          },
           pkceCodeChallenge,
           requestedScope,
-          // accessToken: inactiveAccessToken,
         },
-        { new: true } // runValidators option not working
+        { new: true } // runValidators option not working, see caveats documentation under update()
       );
       dbCode.validateSync(); // because runValidators option not working
     } else {
       const newCode = new Code({
         userId: req.session.user?.id,
-        authorisationCode,
+        authorisationCode: {
+          identifier: authorisationCode,
+          expires: Date.now() + 2000,
+        },
         pkceCodeChallenge,
         requestedScope,
         recipientClientId: queryObject.client_id,
-        // accessToken: inactiveAccessToken,
         redirectUri: queryObject.redirect_uri,
       });
       dbNewCode = await newCode.save();
@@ -221,15 +220,23 @@ export async function validateRequestParameters(
     grant_type,
     client_id,
     redirect_uri,
+    code_verifier, // still to do
   }: {
     code: string;
     grant_type: string;
     client_id: string;
     redirect_uri: string;
+    code_verifier: string;
   } = req.body;
   try {
-    const dbCode = await Code.findOne({ authorisationCode: code });
+    const dbCode = await Code.findOne({ "authorisationCode.identifier": code });
     if (!dbCode) throw new Error("invalid code (not found)");
+    if (
+      dbCode?.authorisationCode?.expires &&
+      dbCode?.authorisationCode?.expires <= Date.now()
+    )
+      throw new Error("Authorisation code expired");
+
     if (client_id !== dbCode.recipientClientId)
       throw new Error("invalid client_id, client unauthorized");
     if (redirect_uri !== dbCode.redirectUri)
@@ -246,6 +253,9 @@ export async function validateRequestParameters(
       error: "Catch error",
       error_description: `Catch error in validateRequestParameters: ${error}`,
     };
-    return res.json(400).json(oauthError);
+    return res.status(401).json(oauthError);
   }
 }
+
+// todo
+// validater pkce code_verifier in validateRequestParameters

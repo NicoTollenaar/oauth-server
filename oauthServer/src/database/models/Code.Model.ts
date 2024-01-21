@@ -3,7 +3,10 @@ import { scopes } from "../../types/customTypes";
 import { truncate } from "fs";
 
 export interface ICode extends Document {
-  authorisationCode?: string;
+  authorisationCode?: {
+    identifier: string;
+    expires: number;
+  };
   pkceCodeChallenge: string;
   accessToken?: {
     identifier: string;
@@ -27,14 +30,24 @@ type CodeModel = Model<ICode, {}, ICodeMethods>;
 
 const codeSchema: Schema = new Schema<ICode, CodeModel, ICodeMethods>({
   authorisationCode: {
-    type: String,
-    unique: true,
-    trim: true,
-    validate: {
-      validator: nullIfAccessToken,
-      message: "authorization code cannot co-exist with accesstoken",
+    identifier: {
+      type: String,
+      unique: true,
+      trim: true,
+      validate: {
+        validator: nullIfAccessToken,
+        message: "authorization code cannot co-exist with accesstoken",
+      },
+    },
+    expires: {
+      type: Number,
+      trim: true,
+      required: function () {
+        return !!this.authorisationCode.identifier;
+      },
     },
   },
+
   pkceCodeChallenge: { type: String, unique: true, trim: true },
   accessToken: {
     identifier: {
@@ -86,5 +99,5 @@ function nullIfAccessToken(this: ICode, authorisationCode: string) {
 }
 
 function nullIfAuthorisationCode(this: ICode, accessToken: string) {
-  return this.authorisationCode ? !accessToken : true;
+  return this.authorisationCode?.identifier ? !accessToken : true;
 }

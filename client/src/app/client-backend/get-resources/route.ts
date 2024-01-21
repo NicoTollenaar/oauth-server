@@ -1,7 +1,7 @@
 import { tokenEndpoint, resourcesEndpoint } from "@/app/constants/urls";
 import {
   ActiveTokenInfo,
-  IInActiveTokenInfo,
+  IAccessTokenIdentifier,
   OAuthError,
   TokenInfo,
 } from "@/app/types/customTypes";
@@ -46,7 +46,7 @@ async function getAccessToken(
     grant_type: "authorization_code",
     client_id: process.env.NEXT_PUBLIC_CLIENT_ID as string,
     redirect_uri,
-    code_verifiier: "", //still todo
+    code_verifier: "", //still todo
   });
   try {
     const response = await fetch(tokenEndpoint, {
@@ -59,12 +59,14 @@ async function getAccessToken(
       },
       body,
     });
+    const tokenInfo: IAccessTokenIdentifier | OAuthError =
+      await response.json();
     if (response.ok) {
-      const { accessTokenIdentifier }: { accessTokenIdentifier: string } =
-        await response.json();
+      const { accessTokenIdentifier }: IAccessTokenIdentifier =
+        tokenInfo as IAccessTokenIdentifier;
       return accessTokenIdentifier;
     } else {
-      const oauthError: OAuthError = await response.json();
+      const oauthError: OAuthError = tokenInfo as OAuthError;
       return oauthError;
     }
   } catch (error) {

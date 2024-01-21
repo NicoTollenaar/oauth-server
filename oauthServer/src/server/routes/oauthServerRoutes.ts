@@ -13,13 +13,7 @@ import {
 import Code from "../../database/models/Code.Model";
 import { User } from "../../database/models/User.Model";
 import Utils from "../../utils/utils";
-import {
-  OAuthError,
-  ActiveTokenInfo,
-  IInActiveTokenInfo,
-  InActiveTokenInfo,
-  TokenInfo,
-} from "../../types/customTypes";
+import { OAuthError, TokenInfo } from "../../types/customTypes";
 
 const router = express.Router();
 
@@ -95,18 +89,20 @@ router.post(
       return res.status(401).json(oauthError);
     }
     try {
-      const dbUserCode = await Code.findOne({ authorisationCode: code });
+      const dbUserCode = await Code.findOne({
+        "authorisationCode.identifier": code,
+      });
       if (!dbUserCode) {
         const oauthError: OAuthError = {
           error: "authorization code not found",
           error_description:
-            "token endpoint rejected request do to invalid or non-existent authorization code",
+            "token endpoint rejected request due to invalid or non-existent authorization code",
         };
         return res.status(401).json(oauthError);
       }
       const accessTokenIdentifier = crypto.randomUUID();
       const dbUpdatedUserCode = await Code.findOneAndUpdate(
-        { authorisationCode: code },
+        { "authorisationCode.identifier": code },
         {
           authorisationCode: null,
           accessToken: {

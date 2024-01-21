@@ -42,3 +42,7 @@ export interface OAuthError {
 }
 
 export type TokenInfo = ActiveTokenInfo | IInActiveTokenInfo | OAuthError;
+
+export interface IAccessTokenIdentifier {
+  accessTokenIdentifier: string;
+}
