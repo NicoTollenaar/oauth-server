@@ -22,24 +22,29 @@ export default function useResource() {
     if (queryError) {
       setResourceMessage(queryParams.get("error") as string);
     } else if (storageState === queryState) {
-      getAccessTokenAndResource(queryCode);
+      getAccessTokenAndResource(queryCode, storageState);
     } else {
       setResourceMessage("someone tampered with state");
     }
     localStorage.removeItem("state");
+    localStorage.removeItem(storageState);
   });
 
-  async function getAccessTokenAndResource(code: string): Promise<void> {
+  async function getAccessTokenAndResource(
+    authorisationCode: string,
+    storageState: string
+  ): Promise<void> {
     try {
+      const storedCodeChallenge: string | null =
+        localStorage.getItem(storageState);
+      if (!storedCodeChallenge)
+        throw new Error("storedCodeChallenge not found");
       const tokenInfo: TokenInfo = await Utils.requestAccessTokenAndResource(
-        code
+        authorisationCode,
+        storedCodeChallenge
       );
-      if (!tokenInfo) {
-        setResource(null);
-        setResourceMessage(
-          `error: failed request \n error_description: "calling requestAccessTokenAndResource failed"`
-        );
-      }
+      if (!tokenInfo)
+        throw new Error("requestAccessTokenAndResource returned null");
       setResource(JSON.stringify(tokenInfo));
       if ("error" in tokenInfo) {
         setResourceMessage("Request failed");
@@ -54,9 +59,7 @@ export default function useResource() {
         error
       );
       setResource(null);
-      setResourceMessage(
-        `error: catch error \n error_description: Catch error in getAccessTokenAndResource`
-      );
+      setResourceMessage(`Catch error in getAccessTokenResource: ${error}`);
     }
   }
   return { resource, resourceMessage };

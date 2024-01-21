@@ -6,7 +6,9 @@ import "dotenv/config";
 async function createDbResourceServer() {
   const resoureServerId = process.env.RESOURCE_SERVER_ID;
   const resourceServerSecret = process.env.RESOURCE_SERVER_SECRET;
-  const { hash, salt } = await Utils.hashString(resourceServerSecret as string);
+  const { hash, salt } = await Utils.hashStringWithSalt(
+    resourceServerSecret as string
+  );
   const dbResourceServer = await ResourceServer.create({
     resourceServerId: resoureServerId,
     hashedResourceServerSecret: {

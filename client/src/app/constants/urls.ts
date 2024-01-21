@@ -14,4 +14,5 @@ export const tokenEndpoint = `${baseUrlOauthBackend}/oauth/token`;
 export const loggedInStatusEndpoint = `${baseUrlOauthBackend}/logged-in-status`;
 
 export const clientBackendGetResourcesEndpoint = `${baseUrlClientBackend}/get-resources`;
+export const clientBackendPKCEEndpoint = `${baseUrlClientBackend}/pkce`;
 export const resourcesEndpoint = `${baseUrlResourceServer}/get-resources`;

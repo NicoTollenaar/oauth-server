@@ -7,6 +7,7 @@ import { Document } from "mongodb";
 import Utils from "../../utils/utils";
 import ResourceServer from "../../database/models/ResourceServer.Model";
 import { OAuthError } from "../../types/customTypes";
+import crypto from "crypto";
 
 export async function isLoggedOut(
   req: Request,
@@ -169,7 +170,7 @@ export async function isAuthenticatedClient(
   const dbClient = await Client.findOne({ clientId: id }).populate(
     "hashedClientSecret"
   );
-  const { hash } = await Utils.hashString(
+  const { hash } = await Utils.hashStringWithSalt(
     secret as string,
     dbClient?.hashedClientSecret.salt
   );
@@ -193,7 +194,7 @@ export async function isAuthenticatedResourceServer(
   const dbResourceServer = await ResourceServer.findOne({
     resourceServerId: id,
   }).populate("hashedResourceServerSecret");
-  const { hash } = await Utils.hashString(
+  const { hash } = await Utils.hashStringWithSalt(
     secret as string,
     dbResourceServer?.hashedResourceServerSecret.salt
   );
@@ -220,7 +221,7 @@ export async function validateRequestParameters(
     grant_type,
     client_id,
     redirect_uri,
-    code_verifier, // still to do
+    code_verifier,
   }: {
     code: string;
     grant_type: string;
@@ -243,6 +244,12 @@ export async function validateRequestParameters(
       throw new Error("invalid redirect_uri");
     if (grant_type !== "authorization_code")
       throw new Error("invalid grant_type");
+    const hashedCodeVerifier = crypto
+      .createHash("sha265")
+      .update(code_verifier)
+      .digest("base64url");
+    if (hashedCodeVerifier !== dbCode.pkceCodeChallenge)
+      throw new Error("PKCE code challenge failed");
     next();
   } catch (error) {
     console.log(

@@ -10,7 +10,7 @@ import {
 } from "../types/customTypes";
 
 export default class Utils {
-  static async hashString(stringToHash: string, existingSalt?: Buffer) {
+  static async hashStringWithSalt(stringToHash: string, existingSalt?: Buffer) {
     const salt = existingSalt ? existingSalt : crypto.randomBytes(16);
     const hash = crypto.scryptSync(stringToHash, salt, 64).toString("hex");
     return { hash, salt };

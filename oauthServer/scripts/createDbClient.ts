@@ -4,7 +4,7 @@ import Utils from "../src/utils/utils";
 import "dotenv/config";
 
 async function createDbClient() {
-  const { hash, salt } = await Utils.hashString(
+  const { hash, salt } = await Utils.hashStringWithSalt(
     process.env.CLIENT_SECRET as string
   );
   const dbClient = await Client.create({

@@ -4,6 +4,7 @@ import {
   redirect_uri,
   loginEndpoint,
   clientBackendGetResourcesEndpoint,
+  clientBackendPKCEEndpoint,
 } from "../constants/urls";
 import { URLSearchParams } from "url";
 import {
@@ -13,6 +14,9 @@ import {
   TokenInfo,
 } from "../types/customTypes";
 import { queryParameters } from "../constants/otherConstants";
+import crypto from "crypto";
+import PKCECode from "../../../../oauthServer/src/database/models/PKCECode";
+import { IPKCECode } from "../../../../oauthServer/src/database/models/PKCECode";
 
 export class Utils {
   static getQueryObject(searchParamsIterator: URLSearchParams) {
@@ -57,14 +61,17 @@ export class Utils {
   }
 
   // still need to swap authorisation code for accestoken
-  static async requestAccessTokenAndResource(code: string): Promise<TokenInfo> {
+  static async requestAccessTokenAndResource(
+    authorisationCode: string,
+    codeChallenge: string
+  ): Promise<TokenInfo> {
     try {
       const response = await fetch(clientBackendGetResourcesEndpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: code,
+        body: new URLSearchParams({ authorisationCode, codeChallenge }),
       });
       const tokenInfo: TokenInfo = await response.json();
       return tokenInfo;
@@ -90,28 +97,99 @@ export class Utils {
     return true;
   }
 
-  static buildAuthorisationUrl(scope: string) {
-    const randomString = crypto.randomUUID();
-    localStorage.setItem("state", randomString);
-    const queryString = this.buildQueryStringAuthorize(randomString, scope);
-    const authorisationUrl = `${authorisationEndpointFrontend}?${queryString}`;
-    return authorisationUrl;
+  static async getCodeChallenge(): Promise<string | OAuthError> {
+    try {
+      const response: Response = await fetch(clientBackendPKCEEndpoint);
+      const codeChallenge: string | OAuthError = await response.json();
+      if (!response.ok) throw new Error("request to get codeChallenge failed");
+      return codeChallenge;
+    } catch (error) {
+      console.log("In catch getCodeChallenge, logging error:", error);
+      const oauth: OAuthError = {
+        error: "catch error",
+        error_description: `Catch error in getCodeChalleng: ${error}`,
+      };
+      return oauth;
+    }
   }
 
-  static buildQueryStringAuthorize(randomState: string, scope: string) {
-    const codeChallenge = crypto.randomUUID();
+  static async buildAuthorisationUrl(
+    scope: string
+  ): Promise<string | OAuthError> {
+    try {
+      const state = crypto.randomUUID();
+      localStorage.setItem("state", state);
+      const codeChallenge: string | OAuthError = await this.getCodeChallenge();
+      if (typeof codeChallenge !== "string")
+        throw new Error("getCodeChallenge failed");
+      localStorage.setItem(state, codeChallenge);
+      const queryString: string = this.buildQueryStringAuthorize(
+        state,
+        scope,
+        codeChallenge
+      );
+      const authorisationUrl = `${authorisationEndpointFrontend}?${queryString}`;
+      return authorisationUrl;
+    } catch (error) {
+      console.log("In catch buildAuthorisationUrl, logging error:", error);
+      const oauthError: OAuthError = {
+        error: "catch error",
+        error_description: `Catch error in buildQueryStringAuthorize: ${error}`,
+      };
+      return oauthError;
+    }
+  }
+
+  static buildQueryStringAuthorize(
+    state: string,
+    scope: string,
+    codeChallenge: string
+  ): string {
     const queryString =
       `response_type=code&` +
       `scope=${scope}&` +
       `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&` +
-      `state=${randomState}&` +
+      `state=${state}&` +
       `redirect_uri=${redirect_uri}&` +
       `code_challenge=${codeChallenge}` +
       `&code_challenge_method=S256`;
     return queryString;
+  }
+
+  static generateCodeVerifierAndChallenge(): string | OAuthError {
+    try {
+      const codeVerifier = crypto.randomBytes(22).toString("hex");
+      const codeChallenge = crypto
+        .createHash("sha256")
+        .update(codeVerifier)
+        .digest("base64url");
+      console.log("codeverifier and challenge:", {
+        codeVerifier,
+        codeChallenge,
+      });
+      const dbPKCECode = new PKCECode({
+        codeVerifier,
+        codeChallenge,
+      });
+      dbPKCECode.save();
+      if (!dbPKCECode) throw new Error("database operation PKCECode failed");
+      console.log("dbPKCECode:", dbPKCECode);
+      return dbPKCECode.codeChallenge;
+    } catch (error) {
+      console.log(
+        "In catch generateCodeVerifierAndChallenge, logging error:",
+        error
+      );
+      const oauthError: OAuthError = {
+        error: "catch error",
+        error_description: `Catch error in generateCodeVerifierAndChallenge: ${error}`,
+      };
+      return oauthError;
+    }
   }
 }
 
 // todo
 // still need to swap authorisation code for accestoken
 // still to implement pkce
+// need to delete pkce where necessary

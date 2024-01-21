@@ -1,24 +1,38 @@
 import { tokenEndpoint, resourcesEndpoint } from "@/app/constants/urls";
 import {
-  ActiveTokenInfo,
   IAccessTokenIdentifier,
   OAuthError,
   TokenInfo,
 } from "@/app/types/customTypes";
 import { redirect_uri } from "@/app/constants/urls";
-import TypePredicament from "@/app/utils/predicamentFunctions";
+import PKCECode, {
+  IPKCECode,
+} from "../../../../../oauthServer/src/database/models/PKCECode";
+
+// need to connect to MongoDb
+// see: https://jasonwatmore.com/next-js-13-app-router-mongodb-user-rego-and-login-tutorial-with-example
 
 export async function POST(req: Request): Promise<Response> {
-  const authorisationCode: string = await req.text();
-  const resource: TokenInfo = await getResource(authorisationCode);
+  console.log("In POST, logging req.body:", req.body);
+  const authorisationCode = await req.text();
+  console.log("In POST, logging authorisationCode:", authorisationCode);
+  const codeChallenge = "placeholder";
+  const resource: TokenInfo = await getResource(
+    authorisationCode,
+    codeChallenge
+  );
   const status: number = "error" in resource ? 401 : 200;
   return Response.json(resource, { status });
 }
 
-async function getResource(authorisationCode: string): Promise<TokenInfo> {
+async function getResource(
+  authorisationCode: string,
+  codeChallenge: string
+): Promise<TokenInfo> {
   try {
     const accessToken: string | OAuthError = await getAccessToken(
-      authorisationCode
+      authorisationCode,
+      codeChallenge
     );
     if (typeof accessToken !== "string") {
       console.log("Unsuccessful accessToken request");
@@ -39,16 +53,21 @@ async function getResource(authorisationCode: string): Promise<TokenInfo> {
 }
 
 async function getAccessToken(
-  authorisationCode: string
+  authorisationCode: string,
+  codeChallenge: string
 ): Promise<string | OAuthError> {
-  const body = new URLSearchParams({
-    code: authorisationCode,
-    grant_type: "authorization_code",
-    client_id: process.env.NEXT_PUBLIC_CLIENT_ID as string,
-    redirect_uri,
-    code_verifier: "", //still todo
-  });
   try {
+    const dbPKCECode: IPKCECode | null = await PKCECode.findOne({
+      codeChallenge,
+    });
+    if (!dbPKCECode) throw new Error("PKCECode not found");
+    const body = new URLSearchParams({
+      code: authorisationCode,
+      grant_type: "authorization_code",
+      client_id: process.env.NEXT_PUBLIC_CLIENT_ID as string,
+      redirect_uri,
+      code_verifier: dbPKCECode.codeVerifier, //still todo
+    });
     const response = await fetch(tokenEndpoint, {
       method: "POST",
       headers: {
@@ -59,6 +78,8 @@ async function getAccessToken(
       },
       body,
     });
+    const { deletedCount } = await PKCECode.deleteOne({ codeChallenge });
+    if (!deletedCount) throw new Error("deletion PKCECode failed");
     const tokenInfo: IAccessTokenIdentifier | OAuthError =
       await response.json();
     if (response.ok) {

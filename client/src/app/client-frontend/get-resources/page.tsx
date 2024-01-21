@@ -1,9 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { authorisationEndpointFrontend } from "../../constants/urls";
+import {
+  authorisationEndpointFrontend,
+  redirect_uri,
+} from "../../constants/urls";
 import { Utils } from "../../utils/utils";
 import useResource from "@/app/hooks/useResource";
+import { OAuthError } from "@/app/types/customTypes";
 
 export default function GetResources() {
   const [message, setMessage] = useState<string>("");
@@ -15,10 +19,21 @@ export default function GetResources() {
     initiateOauthFlow();
   }
 
-  function initiateOauthFlow() {
-    const scope = "openId+profile+email";
-    const authorisationUrl = Utils.buildAuthorisationUrl(scope);
-    router.push(authorisationUrl);
+  async function initiateOauthFlow(): Promise<void> {
+    const scope: string = "openId+profile+email";
+    const authorisationUrl: string | OAuthError =
+      await Utils.buildAuthorisationUrl(scope);
+    if (typeof authorisationUrl !== "string") {
+      setMessage(authorisationUrl.error_description);
+      router.push(
+        `${redirect_uri}?error=${authorisationUrl.error_description}`
+      );
+    }
+    console.log(
+      "In initiateOAuthflow, logging authorisationUrl:",
+      authorisationUrl
+    );
+    router.push(authorisationUrl as string);
   }
 
   return (
