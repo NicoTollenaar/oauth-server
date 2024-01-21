@@ -2,28 +2,19 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Utils } from "@/app/utils/utils";
-import { OAuthError, TokenInfo } from "../types/customTypes";
-import { tokenEndpoint } from "../constants/urls";
+import { TokenInfo } from "../types/customTypes";
 
 export default function useResource() {
   const [resource, setResource] = useState<string | null>(null);
   const [resourceMessage, setResourceMessage] = useState<string | null>(null);
   const router = useRouter();
   const queryParams = useSearchParams();
-  console.log("In useResource");
 
   useEffect(() => {
     const queryCode = queryParams.get("code");
     const queryState = queryParams.get("state");
     const storageState = localStorage.getItem("state");
     const queryError = queryParams.has("error");
-    console.log(
-      "IN useResource, logging queryCode, queryState, storageState, queryError:",
-      queryCode,
-      queryState,
-      storageState,
-      queryError
-    );
     if (!queryCode || !queryState || !storageState) {
       localStorage.removeItem("state");
       return;
@@ -31,11 +22,7 @@ export default function useResource() {
     if (queryError) {
       setResourceMessage(queryParams.get("error") as string);
     } else if (storageState === queryState) {
-      console.log("IN useResource else if (storageState === queryState) ");
-      setTimeout(() => {
-        console.log("IN timeout!!!!!!!!!!!!!!");
-        getAccessTokenAndResource(queryCode);
-      }, 2001);
+      getAccessTokenAndResource(queryCode);
     } else {
       setResourceMessage("someone tampered with state");
     }
@@ -47,7 +34,6 @@ export default function useResource() {
       const tokenInfo: TokenInfo = await Utils.requestAccessTokenAndResource(
         code
       );
-      console.log("In getAccessTokenResource, logging tokenInfo:", tokenInfo);
       if (!tokenInfo) {
         setResource(null);
         setResourceMessage(
