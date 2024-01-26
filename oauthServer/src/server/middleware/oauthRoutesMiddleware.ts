@@ -229,6 +229,7 @@ export async function validateRequestParameters(
     redirect_uri: string;
     code_verifier: string;
   } = req.body;
+  console.log("In validateRequestParameters logging req.body:", req.body);
   try {
     const dbCode = await Code.findOne({ "authorisationCode.identifier": code });
     if (!dbCode) throw new Error("invalid code (not found)");
@@ -245,9 +246,18 @@ export async function validateRequestParameters(
     if (grant_type !== "authorization_code")
       throw new Error("invalid grant_type");
     const hashedCodeVerifier = crypto
-      .createHash("sha265")
+      .createHash("sha256")
       .update(code_verifier)
       .digest("base64url");
+    console.log(
+      "In validateRequestParameters logging hashedCodeVerifier:",
+      hashedCodeVerifier
+    );
+    console.log(
+      "In validateRequestParameters logging dbCode.pkceCodeChallenge:",
+      dbCode.pkceCodeChallenge
+    );
+
     if (hashedCodeVerifier !== dbCode.pkceCodeChallenge)
       throw new Error("PKCE code challenge failed");
     next();

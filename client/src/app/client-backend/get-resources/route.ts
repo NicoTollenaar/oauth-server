@@ -5,22 +5,30 @@ import {
   TokenInfo,
 } from "@/app/types/customTypes";
 import { redirect_uri } from "@/app/constants/urls";
-import PKCECode, {
-  IPKCECode,
-} from "../../../../../oauthServer/src/database/models/PKCECode";
+import PKCECode, { IPKCECode } from "../../../database/models/PKCECode";
 
 // need to connect to MongoDb
 // see: https://jasonwatmore.com/next-js-13-app-router-mongodb-user-rego-and-login-tutorial-with-example
 
 export async function POST(req: Request): Promise<Response> {
   console.log("In POST, logging req.body:", req.body);
-  const authorisationCode = await req.text();
+  const queryString: string = await req.text();
+  console.log("In POST, logging queryString:", queryString);
+  const searchParams: URLSearchParams = new URLSearchParams(queryString);
+  const codeChallenge: string | null = searchParams.get("codeChallenge");
+  const authorisationCode: string | null =
+    searchParams.get("authorisationCode");
+  console.log("In POST, logging codeChallenge:", codeChallenge);
   console.log("In POST, logging authorisationCode:", authorisationCode);
-  const codeChallenge = "placeholder";
-  const resource: TokenInfo = await getResource(
-    authorisationCode,
-    codeChallenge
-  );
+  let resource: TokenInfo;
+  if (codeChallenge && authorisationCode) {
+    resource = await getResource(authorisationCode, codeChallenge);
+  } else {
+    resource = {
+      error: "invalid queryParameters",
+      error_description: "authorisationCode or codeChallenge null or undefined",
+    };
+  }
   const status: number = "error" in resource ? 401 : 200;
   return Response.json(resource, { status });
 }

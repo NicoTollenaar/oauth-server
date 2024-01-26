@@ -27,8 +27,6 @@ const PKCECodeSchema: Schema = new Schema<IPKCECode>({
   },
 });
 
-const PKCECode = mongoose.model<IPKCECode>("PKCECode", PKCECodeSchema);
-
 function isProperlyHashedAndEncoded(
   this: IPKCECode,
   codeChallenge: string
@@ -39,5 +37,8 @@ function isProperlyHashedAndEncoded(
     .digest("base64url");
   return codeChallenge === correctCodeChallenge;
 }
+const PKCECode =
+  mongoose.models.PKCECode ||
+  mongoose.model<IPKCECode>("PKCECode", PKCECodeSchema);
 
 export default PKCECode;

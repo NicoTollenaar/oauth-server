@@ -1,7 +1,12 @@
 {
   "compilerOptions": {
+    // suggested for working with typegoose,
+    // see: https://codevoweb.com/setup-and-use-mongodb-in-nextjs-13-app-directory/
+
+    // "experimentalDecorators": true,
+    // "emitDecoratorMetadata": true,
+
     "target": "es2015",
-    // "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,

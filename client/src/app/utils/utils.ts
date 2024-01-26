@@ -4,9 +4,7 @@ import {
   redirect_uri,
   loginEndpoint,
   clientBackendGetResourcesEndpoint,
-  clientBackendPKCEEndpoint,
 } from "../constants/urls";
-import { URLSearchParams } from "url";
 import {
   LoginFormData,
   OAuthError,
@@ -15,8 +13,7 @@ import {
 } from "../types/customTypes";
 import { queryParameters } from "../constants/otherConstants";
 import crypto from "crypto";
-import PKCECode from "../../../../oauthServer/src/database/models/PKCECode";
-import { IPKCECode } from "../../../../oauthServer/src/database/models/PKCECode";
+import getAndSaveCodeVerifierAndChallenge from "../serverActions/actions";
 
 export class Utils {
   static getQueryObject(searchParamsIterator: URLSearchParams) {
@@ -97,29 +94,32 @@ export class Utils {
     return true;
   }
 
-  static async getCodeChallenge(): Promise<string | OAuthError> {
-    try {
-      const response: Response = await fetch(clientBackendPKCEEndpoint);
-      const codeChallenge: string | OAuthError = await response.json();
-      if (!response.ok) throw new Error("request to get codeChallenge failed");
-      return codeChallenge;
-    } catch (error) {
-      console.log("In catch getCodeChallenge, logging error:", error);
-      const oauth: OAuthError = {
-        error: "catch error",
-        error_description: `Catch error in getCodeChalleng: ${error}`,
-      };
-      return oauth;
-    }
-  }
+  // static async getCodeChallenge(): Promise<string | OAuthError> {
+  //   try {
+  //     const response: Response = await fetch(clientBackendPKCEEndpoint);
+  //     const codeChallenge: string | OAuthError = await response.json();
+  //     if (!response.ok) throw new Error("request to get codeChallenge failed");
+  //     return codeChallenge;
+  //   } catch (error) {
+  //     console.log("In catch getCodeChallenge, logging error:", error);
+  //     const oauth: OAuthError = {
+  //       error: "catch error",
+  //       error_description: `Catch error in getCodeChalleng: ${error}`,
+  //     };
+  //     return oauth;
+  //   }
+  // }
 
   static async buildAuthorisationUrl(
     scope: string
   ): Promise<string | OAuthError> {
     try {
-      const state = crypto.randomUUID();
+      const state = window.crypto.randomUUID();
       localStorage.setItem("state", state);
-      const codeChallenge: string | OAuthError = await this.getCodeChallenge();
+      const codeChallenge: string | OAuthError =
+        await getAndSaveCodeVerifierAndChallenge();
+      if (typeof codeChallenge !== "string")
+        throw new Error("getAndSaveCodeVerifierAndChallenge failed");
       if (typeof codeChallenge !== "string")
         throw new Error("getCodeChallenge failed");
       localStorage.setItem(state, codeChallenge);
@@ -156,37 +156,37 @@ export class Utils {
     return queryString;
   }
 
-  static generateCodeVerifierAndChallenge(): string | OAuthError {
-    try {
-      const codeVerifier = crypto.randomBytes(22).toString("hex");
-      const codeChallenge = crypto
-        .createHash("sha256")
-        .update(codeVerifier)
-        .digest("base64url");
-      console.log("codeverifier and challenge:", {
-        codeVerifier,
-        codeChallenge,
-      });
-      const dbPKCECode = new PKCECode({
-        codeVerifier,
-        codeChallenge,
-      });
-      dbPKCECode.save();
-      if (!dbPKCECode) throw new Error("database operation PKCECode failed");
-      console.log("dbPKCECode:", dbPKCECode);
-      return dbPKCECode.codeChallenge;
-    } catch (error) {
-      console.log(
-        "In catch generateCodeVerifierAndChallenge, logging error:",
-        error
-      );
-      const oauthError: OAuthError = {
-        error: "catch error",
-        error_description: `Catch error in generateCodeVerifierAndChallenge: ${error}`,
-      };
-      return oauthError;
-    }
-  }
+  // static getAndSaveCodeVerifierAndChallenge(): string | OAuthError {
+  //   try {
+  //     const codeVerifier = crypto.randomBytes(22).toString("hex");
+  //     const codeChallenge = crypto
+  //       .createHash("sha256")
+  //       .update(codeVerifier)
+  //       .digest("base64url");
+  //     console.log("codeverifier and challenge:", {
+  //       codeVerifier,
+  //       codeChallenge,
+  //     });
+  //     const dbPKCECode = new PKCECode({
+  //       codeVerifier,
+  //       codeChallenge,
+  //     });
+  //     dbPKCECode.save();
+  //     if (!dbPKCECode) throw new Error("database operation PKCECode failed");
+  //     console.log("dbPKCECode:", dbPKCECode);
+  //     return dbPKCECode.codeChallenge;
+  //   } catch (error) {
+  //     console.log(
+  //       "In catch getAndSaveCodeVerifierAndChallenge, logging error:",
+  //       error
+  //     );
+  //     const oauthError: OAuthError = {
+  //       error: "catch error",
+  //       error_description: `Catch error in getAndSaveCodeVerifierAndChallenge: ${error}`,
+  //     };
+  //     return oauthError;
+  //   }
+  // }
 }
 
 // todo
