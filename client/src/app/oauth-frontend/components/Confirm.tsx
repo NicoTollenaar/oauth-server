@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation";
 import { Utils } from "../../utils/utils";
 import { redirect_uri } from "../../constants/urls";
-import type { QueryObject } from "@/app/types/customTypes";
+import type { OAuthError, QueryObject } from "@/app/types/customTypes";
 
 interface ConfirmProps {
   queryObject: QueryObject;
@@ -11,16 +11,16 @@ export default function Confirm({ queryObject }: ConfirmProps) {
   const router = useRouter();
   async function handleConfirm() {
     try {
-      const response = await Utils.postConsentAndGetAuthorisationCode(
-        queryObject
-      );
-      const responseJSON = await response?.json();
-      if (response?.ok) {
+      const authorisationCode: string | OAuthError =
+        await Utils.postConsentAndGetAuthorisationCode(queryObject);
+      if (typeof authorisationCode === "string") {
         router.push(
-          `${redirect_uri}?code=${responseJSON.authorisationCode}&state=${queryObject.state}`
+          `${redirect_uri}?code=${authorisationCode}&state=${queryObject.state}`
         );
       } else {
-        router.push(`${redirect_uri}?error=${responseJSON.error}`);
+        router.push(
+          `${redirect_uri}?error=${authorisationCode.error_description}`
+        );
       }
     } catch (error) {
       console.log("in catch block handleConfirm, logging error:", error);

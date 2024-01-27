@@ -40,14 +40,35 @@ export async function isValidRequest(
   req: Request,
   res: Response,
   next: NextFunction
-) {
-  const queryObject = req.body;
-  const dbClient = await Client.findOne({ clientId: queryObject.client_id });
-  const queryParametersValid = dbClient && queryObject.response_type === "code";
-  if (queryParametersValid) {
-    next();
-  } else {
-    res.status(401).json({ error: "Invalid authorisation request" });
+): Promise<void> {
+  try {
+    const queryObject = req.body;
+    console.log("req.body:", req.body);
+    const dbClient = await Client.findOne({ clientId: queryObject.client_id });
+    let errorDescription: string = "";
+    if (!dbClient) errorDescription = "client application unknown";
+    if (queryObject.response_type !== "code")
+      errorDescription = "invalid response type";
+    if (!queryObject.code_challenge)
+      errorDescription = "code challenge required";
+    if (queryObject.code_challenge_method !== "S256")
+      errorDescription = "transform algorithm not supported";
+    if (errorDescription) {
+      const oauthError: OAuthError = Utils.createOauthError(
+        "invalid request",
+        errorDescription
+      );
+      res.status(401).json(oauthError);
+    } else {
+      next();
+    }
+  } catch (error) {
+    console.log("in catch is ValidRequest, logging error:", error);
+    const oauthError: OAuthError = Utils.createOauthError(
+      "catch error",
+      `Catch error in isValidRequest: ${error}`
+    );
+    res.status(401).json(oauthError);
   }
 }
 

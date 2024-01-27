@@ -24,9 +24,11 @@ export class Utils {
     return queryObject;
   }
 
-  static async postConsentAndGetAuthorisationCode(queryObject: QueryObject) {
+  static async postConsentAndGetAuthorisationCode(
+    queryObject: QueryObject
+  ): Promise<string | OAuthError> {
     try {
-      const response = await fetch(authorisationEndpointBackend, {
+      const response: Response = await fetch(authorisationEndpointBackend, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -34,9 +36,14 @@ export class Utils {
         },
         body: JSON.stringify(queryObject),
       });
-      return response;
-    } catch (err) {
-      console.log("In catch block utils, logging error:", err);
+      const responseJSON = await response.json();
+      return responseJSON.authorisationCode;
+    } catch (error) {
+      console.log("In catch block utils, logging error:", error);
+      return this.createOauthError(
+        "catch error",
+        `Catch error in postConsentAndGetAuthorisationCode: ${error}`
+      );
     }
   }
 
@@ -93,22 +100,6 @@ export class Utils {
     return true;
   }
 
-  // static async getCodeChallenge(): Promise<string | OAuthError> {
-  //   try {
-  //     const response: Response = await fetch(clientBackendPKCEEndpoint);
-  //     const codeChallenge: string | OAuthError = await response.json();
-  //     if (!response.ok) throw new Error("request to get codeChallenge failed");
-  //     return codeChallenge;
-  //   } catch (error) {
-  //     console.log("In catch getCodeChallenge, logging error:", error);
-  //     const oauth: OAuthError = {
-  //       error: "catch error",
-  //       error_description: `Catch error in getCodeChalleng: ${error}`,
-  //     };
-  //     return oauth;
-  //   }
-  // }
-
   static async buildAuthorisationUrl(
     scope: string
   ): Promise<string | OAuthError> {
@@ -153,5 +144,15 @@ export class Utils {
       `code_challenge=${codeChallenge}` +
       `&code_challenge_method=S256`;
     return queryString;
+  }
+
+  static createOauthError(
+    error: string,
+    error_description: string
+  ): OAuthError {
+    return {
+      error,
+      error_description,
+    };
   }
 }

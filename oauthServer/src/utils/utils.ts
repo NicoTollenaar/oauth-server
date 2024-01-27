@@ -92,4 +92,14 @@ export default class Utils {
       };
     }
   }
+
+  static createOauthError(
+    error: string,
+    error_description: string
+  ): OAuthError {
+    return {
+      error,
+      error_description,
+    };
+  }
 }
