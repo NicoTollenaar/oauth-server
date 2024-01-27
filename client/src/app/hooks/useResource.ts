@@ -17,6 +17,7 @@ export default function useResource() {
     const queryError = queryParams.has("error");
     if (!queryCode || !queryState || !storageState) {
       localStorage.removeItem("state");
+      if (storageState) localStorage.removeItem(storageState);
       return;
     }
     if (queryError) {
@@ -24,7 +25,7 @@ export default function useResource() {
     } else if (storageState === queryState) {
       getAccessTokenAndResource(queryCode, storageState);
     } else {
-      setResourceMessage("someone tampered with state");
+      setResourceMessage("invalid state");
     }
     localStorage.removeItem("state");
     localStorage.removeItem(storageState);

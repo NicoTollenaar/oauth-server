@@ -6,12 +6,13 @@ import Confirm from "../components/Confirm";
 import { Utils } from "@/app/utils/utils";
 import { QueryObject } from "@/app/types/customTypes";
 import { redirect_uri } from "@/app/constants/urls";
+import { ReactElement } from "react";
 
-export default function Authorize() {
+export default function Authorize(): ReactElement<any, any> {
   const router = useRouter();
-  const isLoggedIn = useLoggedInStatus();
-  const queryParams = useSearchParams();
-  let queryObject = Utils.getQueryObject(queryParams);
+  const isLoggedIn: boolean = useLoggedInStatus();
+  const queryParams: URLSearchParams = useSearchParams();
+  let queryObject: Record<string, string> = Utils.getQueryObject(queryParams);
   if (!Utils.isProfileQueryObject(queryObject))
     router.push(`${redirect_uri}?error=incorrect query parameters`);
 

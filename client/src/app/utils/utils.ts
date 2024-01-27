@@ -57,7 +57,6 @@ export class Utils {
     }
   }
 
-  // still need to swap authorisation code for accestoken
   static async requestAccessTokenAndResource(
     authorisationCode: string,
     codeChallenge: string
@@ -155,41 +154,4 @@ export class Utils {
       `&code_challenge_method=S256`;
     return queryString;
   }
-
-  // static getAndSaveCodeVerifierAndChallenge(): string | OAuthError {
-  //   try {
-  //     const codeVerifier = crypto.randomBytes(22).toString("hex");
-  //     const codeChallenge = crypto
-  //       .createHash("sha256")
-  //       .update(codeVerifier)
-  //       .digest("base64url");
-  //     console.log("codeverifier and challenge:", {
-  //       codeVerifier,
-  //       codeChallenge,
-  //     });
-  //     const dbPKCECode = new PKCECode({
-  //       codeVerifier,
-  //       codeChallenge,
-  //     });
-  //     dbPKCECode.save();
-  //     if (!dbPKCECode) throw new Error("database operation PKCECode failed");
-  //     console.log("dbPKCECode:", dbPKCECode);
-  //     return dbPKCECode.codeChallenge;
-  //   } catch (error) {
-  //     console.log(
-  //       "In catch getAndSaveCodeVerifierAndChallenge, logging error:",
-  //       error
-  //     );
-  //     const oauthError: OAuthError = {
-  //       error: "catch error",
-  //       error_description: `Catch error in getAndSaveCodeVerifierAndChallenge: ${error}`,
-  //     };
-  //     return oauthError;
-  //   }
-  // }
 }
-
-// todo
-// still need to swap authorisation code for accestoken
-// still to implement pkce
-// need to delete pkce where necessary

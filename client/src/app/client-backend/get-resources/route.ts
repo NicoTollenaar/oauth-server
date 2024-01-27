@@ -7,19 +7,12 @@ import {
 import { redirect_uri } from "@/app/constants/urls";
 import PKCECode, { IPKCECode } from "../../../database/models/PKCECode";
 
-// need to connect to MongoDb
-// see: https://jasonwatmore.com/next-js-13-app-router-mongodb-user-rego-and-login-tutorial-with-example
-
 export async function POST(req: Request): Promise<Response> {
-  console.log("In POST, logging req.body:", req.body);
   const queryString: string = await req.text();
-  console.log("In POST, logging queryString:", queryString);
   const searchParams: URLSearchParams = new URLSearchParams(queryString);
   const codeChallenge: string | null = searchParams.get("codeChallenge");
   const authorisationCode: string | null =
     searchParams.get("authorisationCode");
-  console.log("In POST, logging codeChallenge:", codeChallenge);
-  console.log("In POST, logging authorisationCode:", authorisationCode);
   let resource: TokenInfo;
   if (codeChallenge && authorisationCode) {
     resource = await getResource(authorisationCode, codeChallenge);
@@ -74,7 +67,7 @@ async function getAccessToken(
       grant_type: "authorization_code",
       client_id: process.env.NEXT_PUBLIC_CLIENT_ID as string,
       redirect_uri,
-      code_verifier: dbPKCECode.codeVerifier, //still todo
+      code_verifier: dbPKCECode.codeVerifier,
     });
     const response = await fetch(tokenEndpoint, {
       method: "POST",
@@ -95,8 +88,7 @@ async function getAccessToken(
         tokenInfo as IAccessTokenIdentifier;
       return accessTokenIdentifier;
     } else {
-      const oauthError: OAuthError = tokenInfo as OAuthError;
-      return oauthError;
+      return tokenInfo as OAuthError;
     }
   } catch (error) {
     console.log("Error in catch block getAccessToken, error:", error);

@@ -29,10 +29,6 @@ export default function GetResources() {
         `${redirect_uri}?error=${authorisationUrl.error_description}`
       );
     }
-    console.log(
-      "In initiateOAuthflow, logging authorisationUrl:",
-      authorisationUrl
-    );
     router.push(authorisationUrl as string);
   }
 
