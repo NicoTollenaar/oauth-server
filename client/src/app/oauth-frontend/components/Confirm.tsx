@@ -13,6 +13,7 @@ export default function Confirm({ queryObject }: ConfirmProps) {
     try {
       const authorisationCode: string | OAuthError =
         await Utils.postConsentAndGetAuthorisationCode(queryObject);
+      console.log("In Confirm logging authorisationCode:", authorisationCode);
       if (typeof authorisationCode === "string") {
         router.push(
           `${redirect_uri}?code=${authorisationCode}&state=${queryObject.state}`

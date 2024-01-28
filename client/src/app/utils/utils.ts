@@ -36,8 +36,8 @@ export class Utils {
         },
         body: JSON.stringify(queryObject),
       });
-      const responseJSON = await response.json();
-      return responseJSON.authorisationCode;
+      const responseBody = await response.json();
+      return response.ok ? responseBody.authorisationCode : responseBody;
     } catch (error) {
       console.log("In catch block utils, logging error:", error);
       return this.createOauthError(

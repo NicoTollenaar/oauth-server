@@ -40,12 +40,12 @@ export async function isValidRequest(
   req: Request,
   res: Response,
   next: NextFunction
-): Promise<void> {
+): Promise<Response | void> {
   try {
     const queryObject = req.body;
     console.log("req.body:", req.body);
     const dbClient = await Client.findOne({ clientId: queryObject.client_id });
-    let errorDescription: string = "";
+    let errorDescription: string | null = null;
     if (!dbClient) errorDescription = "client application unknown";
     if (queryObject.response_type !== "code")
       errorDescription = "invalid response type";
@@ -58,7 +58,7 @@ export async function isValidRequest(
         "invalid request",
         errorDescription
       );
-      res.status(401).json(oauthError);
+      return res.status(400).json(oauthError);
     } else {
       next();
     }
@@ -68,7 +68,7 @@ export async function isValidRequest(
       "catch error",
       `Catch error in isValidRequest: ${error}`
     );
-    res.status(401).json(oauthError);
+    return res.status(401).json(oauthError);
   }
 }
 

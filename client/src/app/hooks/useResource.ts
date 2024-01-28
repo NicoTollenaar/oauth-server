@@ -11,24 +11,27 @@ export default function useResource() {
   const queryParams = useSearchParams();
 
   useEffect(() => {
-    const queryCode = queryParams.get("code");
-    const queryState = queryParams.get("state");
-    const storageState = localStorage.getItem("state");
-    const queryError = queryParams.has("error");
-    if (!queryCode || !queryState || !storageState) {
+    const queryCode: string | null = queryParams.get("code");
+    const queryState: string | null = queryParams.get("state");
+    const storageState: string | null = localStorage.getItem("state");
+    const isQueryError: boolean = queryParams.has("error");
+    const queryError: string | null = queryParams.get("error");
+    console.log("In useResource, logging isQueryError:", isQueryError);
+    console.log("In useResource, logging storageState:", storageState);
+    if (isQueryError) {
+      console.log("In useResource, logging queryError:", queryError);
+      setResourceMessage(queryError);
+    } else if (!queryCode || !queryState || !storageState) {
       localStorage.removeItem("state");
       if (storageState) localStorage.removeItem(storageState);
       return;
-    }
-    if (queryError) {
-      setResourceMessage(queryParams.get("error") as string);
     } else if (storageState === queryState) {
       getAccessTokenAndResource(queryCode, storageState);
     } else {
       setResourceMessage("invalid state");
     }
     localStorage.removeItem("state");
-    localStorage.removeItem(storageState);
+    if (storageState) localStorage.removeItem(storageState);
   });
 
   async function getAccessTokenAndResource(
