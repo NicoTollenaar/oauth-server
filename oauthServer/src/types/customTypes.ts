@@ -46,3 +46,11 @@ export type TokenInfo = ActiveTokenInfo | IInActiveTokenInfo | OAuthError;
 export interface IAccessTokenIdentifier {
   accessTokenIdentifier: string;
 }
+
+export interface AccessTokenResponse {
+  access_token: string;
+  token_type: "Bearer";
+  expires_in: number;
+  refresh_token?: string | "" | null | undefined;
+  scope?: string[] | "" | null | undefined;
+}

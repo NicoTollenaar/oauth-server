@@ -28,8 +28,8 @@ export default async function getAndSaveCodeVerifierAndChallenge(): Promise<
       error
     );
     const oauthError: OAuthError = {
-      error: "catch error",
-      error_description: `Catch error in getAndSaveCodeVerifierAndChallenge: ${error}`,
+      error: "catch_error",
+      error_description: `catch_error in getAndSaveCodeVerifierAndChallenge: ${error}`,
     };
     return oauthError;
   }

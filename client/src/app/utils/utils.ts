@@ -41,8 +41,8 @@ export class Utils {
     } catch (error) {
       console.log("In catch block utils, logging error:", error);
       return this.createOauthError(
-        "catch error",
-        `Catch error in postConsentAndGetAuthorisationCode: ${error}`
+        "catch_error",
+        `catch_error in postConsentAndGetAuthorisationCode: ${error}`
       );
     }
   }
@@ -80,12 +80,12 @@ export class Utils {
       return tokenInfo;
     } catch (error) {
       console.log(
-        "catch error in requestAccesTokenAndResource, logging error:",
+        "catch_error in requestAccesTokenAndResource, logging error:",
         error
       );
       const oauthError: OAuthError = {
-        error: "catch error",
-        error_description: `Catch error in requestAccessTokenAndResource: ${error}`,
+        error: "catch_error",
+        error_description: `catch_error in requestAccessTokenAndResource: ${error}`,
       };
       return oauthError;
     }
@@ -123,8 +123,8 @@ export class Utils {
     } catch (error) {
       console.log("In catch buildAuthorisationUrl, logging error:", error);
       const oauthError: OAuthError = {
-        error: "catch error",
-        error_description: `Catch error in buildQueryStringAuthorize: ${error}`,
+        error: "catch_error",
+        error_description: `catch_error in buildQueryStringAuthorize: ${error}`,
       };
       return oauthError;
     }
@@ -136,7 +136,7 @@ export class Utils {
     codeChallenge: string
   ): string {
     const queryString =
-      `response_type=cod&` +
+      `response_type=code&` +
       `scope=${scope}&` +
       `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&` +
       `state=${state}&` +

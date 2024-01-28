@@ -16,10 +16,7 @@ export default function useResource() {
     const storageState: string | null = localStorage.getItem("state");
     const isQueryError: boolean = queryParams.has("error");
     const queryError: string | null = queryParams.get("error");
-    console.log("In useResource, logging isQueryError:", isQueryError);
-    console.log("In useResource, logging storageState:", storageState);
     if (isQueryError) {
-      console.log("In useResource, logging queryError:", queryError);
       setResourceMessage(queryError);
     } else if (!queryCode || !queryState || !storageState) {
       localStorage.removeItem("state");
@@ -51,6 +48,9 @@ export default function useResource() {
         throw new Error("requestAccessTokenAndResource returned null");
       setResource(JSON.stringify(tokenInfo));
       if ("error" in tokenInfo) {
+        setResource(
+          `error: ${tokenInfo.error}; error_description: ${tokenInfo.error_description}`
+        );
         setResourceMessage("Request failed");
       } else if (tokenInfo.active) {
         setResourceMessage("Request successful!");
@@ -63,7 +63,7 @@ export default function useResource() {
         error
       );
       setResource(null);
-      setResourceMessage(`Catch error in getAccessTokenResource: ${error}`);
+      setResourceMessage(`catch_error in getAccessTokenResource: ${error}`);
     }
   }
   return { resource, resourceMessage };

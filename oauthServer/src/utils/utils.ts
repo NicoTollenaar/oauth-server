@@ -87,7 +87,7 @@ export default class Utils {
         error
       );
       return {
-        error: "catch error",
+        error: "catch_error",
         error_description: "error in catch block validateAccessTokenandGetInfo",
       };
     }

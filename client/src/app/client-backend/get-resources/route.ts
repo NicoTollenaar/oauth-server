@@ -1,5 +1,6 @@
 import { tokenEndpoint, resourcesEndpoint } from "@/app/constants/urls";
 import {
+  AccessTokenResponse,
   IAccessTokenIdentifier,
   OAuthError,
   TokenInfo,
@@ -31,23 +32,22 @@ async function getResource(
   codeChallenge: string
 ): Promise<TokenInfo> {
   try {
-    const accessToken: string | OAuthError = await getAccessToken(
-      authorisationCode,
-      codeChallenge
-    );
-    if (typeof accessToken !== "string") {
+    const accessTokenResponse: AccessTokenResponse | OAuthError =
+      await getAccessToken(authorisationCode, codeChallenge);
+    if (!("access_token" in accessTokenResponse)) {
       console.log("Unsuccessful accessToken request");
-      const oauthError: OAuthError = accessToken;
-      return oauthError;
+      return accessTokenResponse as OAuthError;
     }
-    const tokenInfo: TokenInfo = await retrieveResource(accessToken);
+    const tokenInfo: TokenInfo = await retrieveResource(
+      accessTokenResponse.access_token
+    );
     if (!tokenInfo) throw new Error("calling retrieveResource failed");
     return tokenInfo;
   } catch (error) {
     console.log("In catch block getResource, logging error:", error);
     const oauthError: OAuthError = {
-      error: "catch error",
-      error_description: `Catch error in getResource: ${error}`,
+      error: "catch_error",
+      error_description: `catch_error in getResource: ${error}`,
     };
     return oauthError;
   }
@@ -56,7 +56,7 @@ async function getResource(
 async function getAccessToken(
   authorisationCode: string,
   codeChallenge: string
-): Promise<string | OAuthError> {
+): Promise<AccessTokenResponse | OAuthError> {
   try {
     const dbPKCECode: IPKCECode | null = await PKCECode.findOne({
       codeChallenge,
@@ -81,20 +81,17 @@ async function getAccessToken(
     });
     const { deletedCount } = await PKCECode.deleteOne({ codeChallenge });
     if (!deletedCount) throw new Error("deletion PKCECode failed");
-    const tokenInfo: IAccessTokenIdentifier | OAuthError =
-      await response.json();
+    const tokenInfo: AccessTokenResponse | OAuthError = await response.json();
     if (response.ok) {
-      const { accessTokenIdentifier }: IAccessTokenIdentifier =
-        tokenInfo as IAccessTokenIdentifier;
-      return accessTokenIdentifier;
+      return tokenInfo as AccessTokenResponse;
     } else {
       return tokenInfo as OAuthError;
     }
   } catch (error) {
     console.log("Error in catch block getAccessToken, error:", error);
     const oauthError: OAuthError = {
-      error: "Catch error",
-      error_description: `Catch error in getAccessToken: ${error}`,
+      error: "catch_error",
+      error_description: `catch_error in getAccessToken: ${error}`,
     };
     return oauthError;
   }
@@ -122,8 +119,8 @@ async function retrieveResource(
       error
     );
     const oauthError: OAuthError = {
-      error: "catch error",
-      error_description: "Catch error in retrieveResource",
+      error: "catch_error",
+      error_description: "catch_error in retrieveResource",
     };
     return oauthError;
   }

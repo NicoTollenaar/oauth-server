@@ -45,8 +45,8 @@ router.post(
       );
       // check correct error description
       const oauthError: OAuthError = {
-        error: "Catch error",
-        error_description: `Catch error in route /get resources: ${error}`,
+        error: "catch_error",
+        error_description: `catch_error in route /get resources: ${error}`,
       };
       return res.status(401).json(oauthError);
     }

@@ -8,6 +8,7 @@ import Utils from "../../utils/utils";
 import ResourceServer from "../../database/models/ResourceServer.Model";
 import { OAuthError } from "../../types/customTypes";
 import crypto from "crypto";
+import { stat } from "fs";
 
 export async function isLoggedOut(
   req: Request,
@@ -43,7 +44,6 @@ export async function isValidRequest(
 ): Promise<Response | void> {
   try {
     const queryObject = req.body;
-    console.log("req.body:", req.body);
     const dbClient = await Client.findOne({ clientId: queryObject.client_id });
     let errorDescription: string | null = null;
     if (!dbClient) errorDescription = "client application unknown";
@@ -65,8 +65,8 @@ export async function isValidRequest(
   } catch (error) {
     console.log("in catch is ValidRequest, logging error:", error);
     const oauthError: OAuthError = Utils.createOauthError(
-      "catch error",
-      `Catch error in isValidRequest: ${error}`
+      "catch_error",
+      `catch_error in isValidRequest: ${error}`
     );
     return res.status(401).json(oauthError);
   }
@@ -183,7 +183,7 @@ export async function isAuthenticatedClient(
   req: Request,
   res: Response,
   next: NextFunction
-) {
+): Promise<Response | void> {
   const { id, secret } = Utils.extractCredentialsFromBasicAuthHeader(
     req.headers.authorization
   );
@@ -201,7 +201,10 @@ export async function isAuthenticatedClient(
   if (dbClient && isHashEqual) {
     next();
   } else {
-    return res.status(401).json({ error: "Unauthorized client" });
+    return res.status(401).json({
+      error: "invalid_client",
+      error_description: "invalid client credentials",
+    });
   }
 }
 export async function isAuthenticatedResourceServer(
@@ -250,37 +253,78 @@ export async function validateRequestParameters(
     redirect_uri: string;
     code_verifier: string;
   } = req.body;
+  let oauthError: OAuthError | null = null;
+  let statusCode: number = 400;
   try {
     const dbCode = await Code.findOne({ "authorisationCode.identifier": code });
-    if (!dbCode) throw new Error("invalid code (not found)");
+    if (!dbCode) {
+      oauthError = Utils.createOauthError(
+        "invalid_grant",
+        "authorisation code invalid or missing"
+      );
+      throw new Error();
+    }
+    if (grant_type != "authorization_code") {
+      oauthError = Utils.createOauthError(
+        "unsupported_grant_type",
+        "Only authorisation_code flow supported"
+      );
+      throw new Error();
+    }
     if (
-      dbCode?.authorisationCode?.expires &&
-      dbCode?.authorisationCode?.expires <= Date.now()
-    )
-      throw new Error("Authorisation code expired");
-
-    if (client_id !== dbCode.recipientClientId)
-      throw new Error("invalid client_id, client unauthorized");
-    if (redirect_uri !== dbCode.redirectUri)
-      throw new Error("invalid redirect_uri");
-    if (grant_type !== "authorization_code")
-      throw new Error("invalid grant_type");
+      dbCode.authorisationCode?.expires &&
+      dbCode.authorisationCode?.expires <= Date.now()
+    ) {
+      oauthError = Utils.createOauthError(
+        "invalid_grant",
+        "Authorisation code expired"
+      );
+      throw new Error();
+    }
+    if (client_id !== dbCode?.recipientClientId) {
+      statusCode = 401;
+      oauthError = Utils.createOauthError(
+        "invalid_client",
+        "invalid client_id"
+      );
+      throw new Error();
+    }
+    if (redirect_uri !== dbCode?.redirectUri) {
+      oauthError = Utils.createOauthError(
+        "invalid_grant",
+        "invalid redirect_uri"
+      );
+      throw new Error();
+    }
+    if (grant_type !== "authorization_code") {
+      oauthError = Utils.createOauthError(
+        "invalid_grant",
+        "invalid grant_type"
+      );
+      throw new Error();
+    }
     const hashedCodeVerifier = crypto
       .createHash("sha256")
       .update(code_verifier)
       .digest("base64url");
-    if (hashedCodeVerifier !== dbCode.pkceCodeChallenge)
-      throw new Error("PKCE code challenge failed");
+    if (hashedCodeVerifier !== dbCode?.pkceCodeChallenge) {
+      oauthError = Utils.createOauthError(
+        "invalid_grant",
+        "PKCE code challenge failed"
+      );
+      throw new Error();
+    }
     next();
   } catch (error) {
     console.log(
       "In catch block validateRequestParameters, logging error:",
       error
     );
-    const oauthError: OAuthError = {
-      error: "Catch error",
-      error_description: `Catch error in validateRequestParameters: ${error}`,
-    };
-    return res.status(401).json(oauthError);
+    if (!oauthError)
+      oauthError = {
+        error: "catch_error",
+        error_description: `catch_error in validateRequestParameters: ${error}`,
+      };
+    return res.status(statusCode).json(oauthError);
   }
 }

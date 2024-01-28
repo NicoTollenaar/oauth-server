@@ -13,7 +13,11 @@ import {
 import Code from "../../database/models/Code.Model";
 import { User } from "../../database/models/User.Model";
 import Utils from "../../utils/utils";
-import { OAuthError, TokenInfo } from "../../types/customTypes";
+import {
+  AccessTokenResponse,
+  OAuthError,
+  TokenInfo,
+} from "../../types/customTypes";
 
 const router = express.Router();
 
@@ -62,14 +66,17 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
   } catch (error) {
     console.log("in catch block, /login route, logging error:", error);
     const oauthError: OAuthError = {
-      error: "Catch error",
-      error_description: `Catch error in isLoggedOut: ${error}`,
+      error: "catch_error",
+      error_description: `catch_error in isLoggedOut: ${error}`,
     };
     return res.status(401).json(oauthError);
   }
 });
 
-// still to authenticateClient and add appropriate authorization headers in request
+// see oauth.com:
+// If an authorization code is used more than once, the authorization server must deny the subsequent requests. This is easy to accomplish if the authorization codes are stored in a database, since they can simply be marked as used. If a code is used more than once, it should be treated as an attack. If possible, the service should revoke the previous access tokens that were issued from this authorization code.
+// This has not been implemented
+
 router.post(
   "/oauth/token",
   isAuthenticatedClient,
@@ -123,12 +130,22 @@ router.post(
         };
         return res.status(401).json(oauthError);
       }
-      return res.status(200).json({ accessTokenIdentifier });
+      const accessTokenResponse: AccessTokenResponse = {
+        access_token: dbUpdatedUserCode.accessToken?.identifier as string,
+        token_type: "Bearer",
+        expires_in:
+          dbUpdatedUserCode.accessToken?.expires === undefined
+            ? 0
+            : dbUpdatedUserCode.accessToken?.expires - Date.now(),
+        scope: dbUpdatedUserCode.requestedScope,
+      };
+      res.set("Cache-Control", "no-store");
+      return res.status(200).json(accessTokenResponse);
     } catch (error) {
       console.log("In catch block /oauth/token, logging error:", error);
       const oauthError: OAuthError = {
-        error: "catch error",
-        error_description: `Catch error in token endpoint: ${error}`,
+        error: "catch_error",
+        error_description: `catch_error in token endpoint: ${error}`,
       };
       return res.status(401).json(oauthError);
     }
