@@ -136,7 +136,7 @@ export class Utils {
     codeChallenge: string
   ): string {
     const queryString =
-      `response_type=code&` +
+      `response_type=cod&` +
       `scope=${scope}&` +
       `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&` +
       `state=${state}&` +

@@ -20,7 +20,7 @@ export default function Confirm({ queryObject }: ConfirmProps) {
         );
       } else {
         router.push(
-          `${redirect_uri}?error=${authorisationCode.error_description}`
+          `${redirect_uri}?error=error: ${authorisationCode.error}, error description: ${authorisationCode.error_description}`
         );
       }
     } catch (error) {
