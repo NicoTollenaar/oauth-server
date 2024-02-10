@@ -46,9 +46,18 @@ export async function isValidRequest(
     const queryObject: QueryObject = req.body;
     const dbClient = await Client.findOne({ clientId: queryObject.client_id });
     let errorDescription: string | null = null;
-    if (!dbClient) errorDescription = "client application unknown";
-    if (!dbClient?.redirect_uri.includes(queryObject.redirect_uri))
+    let error: string | null = "Invalid request";
+    if (!dbClient) {
+      error = "Unrecognized client_id";
+      errorDescription = "client application unknown";
+    }
+    if (
+      dbClient &&
+      !dbClient?.redirect_uri.includes(queryObject.redirect_uri)
+    ) {
+      error = "Invalid redirect URL";
       errorDescription = "invalid redirection_uri";
+    }
     if (queryObject.response_type !== "code")
       errorDescription = "invalid response type";
     if (!queryObject.code_challenge)
@@ -57,7 +66,7 @@ export async function isValidRequest(
       errorDescription = "transform algorithm not supported";
     if (errorDescription) {
       const oauthError: OAuthError = Utils.createOauthError(
-        "invalid request",
+        error,
         errorDescription
       );
       return res.status(400).json(oauthError);
@@ -268,7 +277,10 @@ export async function validateRequestParameters(
       throw new Error();
     }
     if (!dbClient) {
-      oauthError = Utils.createOauthError("invalid_client", "unknown clientId");
+      oauthError = Utils.createOauthError(
+        "Unrecognized client_id",
+        "unknown clientId"
+      );
       throw new Error();
     }
     if (grant_type != "authorization_code") {
@@ -305,7 +317,7 @@ export async function validateRequestParameters(
     }
     if (!dbClient?.redirect_uri.includes(redirect_uri)) {
       oauthError = Utils.createOauthError(
-        "invalid_grant",
+        "Invalid redirect URL",
         "invalid redirect_uri"
       );
       throw new Error();

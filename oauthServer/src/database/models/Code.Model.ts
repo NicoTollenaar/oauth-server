@@ -72,7 +72,11 @@ const codeSchema: Schema = new Schema<ICode, CodeModel, ICodeMethods>({
       },
     }, //unix timestamp indicating when token will expire.
   },
-  refreshToken: { type: String, unique: true, trim: true }, // should be unique (reset)
+  refreshToken: {
+    type: String,
+    trim: true,
+    unique: true,
+  }, // should be unique (reset)
   idToken: { type: String, unique: true, trim: true },
   userId: { type: Schema.Types.ObjectId, ref: "User" },
   recipientClientId: {
