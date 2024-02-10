@@ -268,18 +268,10 @@ export async function validateRequestParameters(
   let statusCode: number = 400;
   try {
     const dbCode = await Code.findOne({ "authorisationCode.identifier": code });
-    const dbClient = await Client.findOne({ clientId: client_id });
     if (!dbCode) {
       oauthError = Utils.createOauthError(
         "invalid_grant",
         "authorisation code invalid or missing"
-      );
-      throw new Error();
-    }
-    if (!dbClient) {
-      oauthError = Utils.createOauthError(
-        "Unrecognized client_id",
-        "unknown clientId"
       );
       throw new Error();
     }
@@ -311,13 +303,6 @@ export async function validateRequestParameters(
     if (redirect_uri !== dbCode?.redirectUri) {
       oauthError = Utils.createOauthError(
         "invalid_grant",
-        "invalid redirect_uri"
-      );
-      throw new Error();
-    }
-    if (!dbClient?.redirect_uri.includes(redirect_uri)) {
-      oauthError = Utils.createOauthError(
-        "Invalid redirect URL",
         "invalid redirect_uri"
       );
       throw new Error();
