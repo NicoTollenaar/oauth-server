@@ -6,7 +6,7 @@ import { User } from "../../database/models/User.Model";
 import { Document } from "mongodb";
 import Utils from "../../utils/utils";
 import ResourceServer from "../../database/models/ResourceServer.Model";
-import { OAuthError } from "../../types/customTypes";
+import { OAuthError, QueryObject } from "../../types/customTypes";
 import crypto from "crypto";
 import { stat } from "fs";
 
@@ -43,10 +43,12 @@ export async function isValidRequest(
   next: NextFunction
 ): Promise<Response | void> {
   try {
-    const queryObject = req.body;
+    const queryObject: QueryObject = req.body;
     const dbClient = await Client.findOne({ clientId: queryObject.client_id });
     let errorDescription: string | null = null;
     if (!dbClient) errorDescription = "client application unknown";
+    if (!dbClient?.redirect_uri.includes(queryObject.redirect_uri))
+      errorDescription = "invalid redirection_uri";
     if (queryObject.response_type !== "code")
       errorDescription = "invalid response type";
     if (!queryObject.code_challenge)
@@ -257,11 +259,16 @@ export async function validateRequestParameters(
   let statusCode: number = 400;
   try {
     const dbCode = await Code.findOne({ "authorisationCode.identifier": code });
+    const dbClient = await Client.findOne({ clientId: client_id });
     if (!dbCode) {
       oauthError = Utils.createOauthError(
         "invalid_grant",
         "authorisation code invalid or missing"
       );
+      throw new Error();
+    }
+    if (!dbClient) {
+      oauthError = Utils.createOauthError("invalid_client", "unknown clientId");
       throw new Error();
     }
     if (grant_type != "authorization_code") {
@@ -290,6 +297,13 @@ export async function validateRequestParameters(
       throw new Error();
     }
     if (redirect_uri !== dbCode?.redirectUri) {
+      oauthError = Utils.createOauthError(
+        "invalid_grant",
+        "invalid redirect_uri"
+      );
+      throw new Error();
+    }
+    if (!dbClient?.redirect_uri.includes(redirect_uri)) {
       oauthError = Utils.createOauthError(
         "invalid_grant",
         "invalid redirect_uri"

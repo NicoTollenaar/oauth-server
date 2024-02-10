@@ -141,7 +141,7 @@ export class Utils {
       `scope=${scope}&` +
       `client_id=${process.env.NEXT_PUBLIC_CLIENT_ID}&` +
       `state=${state}&` +
-      `redirect_uri=${redirect_uri}&` +
+      `redirect_uri=${redirect_uri + "x"}&` +
       `code_challenge=${codeChallenge}` +
       `&code_challenge_method=S256`;
     return queryString;

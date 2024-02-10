@@ -43,7 +43,7 @@ const codeSchema: Schema = new Schema<ICode, CodeModel, ICodeMethods>({
       type: Number,
       trim: true,
       required: function () {
-        return !!this.authorisationCode.identifier;
+        return !!this.authorisationCode?.identifier;
       },
     },
   },

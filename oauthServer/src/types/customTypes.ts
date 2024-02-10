@@ -54,3 +54,12 @@ export interface AccessTokenResponse {
   refresh_token?: string | "" | null | undefined;
   scope?: string[] | "" | null | undefined;
 }
+export interface QueryObject {
+  response_type: string;
+  scope: string;
+  client_id: string;
+  state: string;
+  redirect_uri: string;
+  code_challenge: string;
+  code_challenge_method: string;
+}

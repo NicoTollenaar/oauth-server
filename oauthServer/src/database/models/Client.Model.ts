@@ -6,6 +6,7 @@ interface IClient {
     hash: string;
     salt: Buffer;
   };
+  redirect_uri: string[];
 }
 
 const clientSchema = new Schema<IClient>({
@@ -14,6 +15,7 @@ const clientSchema = new Schema<IClient>({
     hash: { type: String, required: true },
     salt: { type: Buffer, required: true },
   },
+  redirect_uri: { type: [String], required: true, trim: true },
 });
 
 const Client = mongoose.model<IClient>("Client", clientSchema);
