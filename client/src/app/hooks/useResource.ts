@@ -6,7 +6,7 @@ import { TokenInfo } from "../types/customTypes";
 
 export default function useResource() {
   const [resource, setResource] = useState<string | null>(null);
-  const [resourceMessage, setResourceMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
   const queryParams = useSearchParams();
 
@@ -17,7 +17,7 @@ export default function useResource() {
     const isQueryError: boolean = queryParams.has("error");
     const queryError: string | null = queryParams.get("error");
     if (isQueryError) {
-      setResourceMessage(queryError);
+      setMessage(queryError);
     } else if (!queryCode || !queryState || !storageState) {
       localStorage.removeItem("state");
       if (storageState) localStorage.removeItem(storageState);
@@ -25,7 +25,7 @@ export default function useResource() {
     } else if (storageState === queryState) {
       getAccessTokenAndResource(queryCode, storageState);
     } else {
-      setResourceMessage("invalid state");
+      setMessage("invalid state");
     }
     localStorage.removeItem("state");
     if (storageState) localStorage.removeItem(storageState);
@@ -51,11 +51,11 @@ export default function useResource() {
         setResource(
           `error: ${tokenInfo.error}; error_description: ${tokenInfo.error_description}`
         );
-        setResourceMessage("Request failed");
+        setMessage("Request failed");
       } else if (tokenInfo.active) {
-        setResourceMessage("Request successful!");
+        setMessage("Request successful!");
       } else {
-        setResourceMessage(`accesstoken expired, invalid or non-existent`);
+        setMessage(`accesstoken expired, invalid or non-existent`);
       }
     } catch (error) {
       console.log(
@@ -63,8 +63,8 @@ export default function useResource() {
         error
       );
       setResource(null);
-      setResourceMessage(`catch_error in getAccessTokenResource: ${error}`);
+      setMessage(`catch_error in getAccessTokenResource: ${error}`);
     }
   }
-  return { resource, setResource, resourceMessage, setResourceMessage };
+  return { resource, setResource, message, setMessage };
 }

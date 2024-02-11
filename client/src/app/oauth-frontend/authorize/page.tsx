@@ -17,15 +17,20 @@ export default function Authorize(): ReactElement<any, any> {
     router.push(`${redirect_uri}?error=incorrect query parameters`);
 
   return (
-    <div>
-      {isLoggedIn ? (
-        <Confirm queryObject={queryObject as unknown as QueryObject} />
-      ) : (
-        <Login
-          loggedInStatus={isLoggedIn}
-          queryObject={queryObject as unknown as QueryObject}
-        />
-      )}
+    <div className="h-screen w-[vw] bg-slate-500">
+      <h1 className="m-5 text-[1.5em] text-center font-extrabold">
+        Authorisation Server
+      </h1>
+      <div>
+        {isLoggedIn ? (
+          <Confirm queryObject={queryObject as unknown as QueryObject} />
+        ) : (
+          <Login
+            loggedInStatus={isLoggedIn}
+            queryObject={queryObject as unknown as QueryObject}
+          />
+        )}
+      </div>
     </div>
   );
 }

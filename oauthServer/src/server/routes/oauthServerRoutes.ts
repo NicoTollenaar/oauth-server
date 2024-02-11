@@ -205,13 +205,11 @@ router.delete("/logout", (req: Request, res: Response, next: NextFunction) => {
           req.session
         );
         res.clearCookie("connect.sid");
-        return res
-          .status(200)
-          .send("Logout successful (message from server /logout");
+        return res.status(200).send("Logged out");
       }
     });
   } else {
-    return res.status(200).send("User was already logged out");
+    return res.status(200).send("Already logged out");
   }
 });
 

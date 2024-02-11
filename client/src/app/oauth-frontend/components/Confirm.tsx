@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Utils } from "../../utils/utils";
 import { redirect_uri } from "../../constants/urls";
 import type { OAuthError, QueryObject } from "@/app/types/customTypes";
+import Button from "./Button";
 
 interface ConfirmProps {
   queryObject: QueryObject;
@@ -41,19 +42,20 @@ export default function Confirm({ queryObject }: ConfirmProps) {
   }
   return (
     <div>
-      <h1>
+      <h1 className="text-lg font-semibold">
         Application with clientID {queryObject.client_id} is asking to access
         information with the following scope:
       </h1>
       <br />
-      <ul>{JSON.stringify(queryObject.scope)}</ul>
+      <ul className="text-xl font-bold">{JSON.stringify(queryObject.scope)}</ul>
       <br />
-      <h1>Do you consent?</h1>
-      <br />
-      <button onClick={handleConfirm}>Confirm</button>
-      <br />
-      <br />
-      {message && <h1 className="text-red-500">{message}</h1>}
+      <h1 className="text-xl font-bold">Do you consent?</h1>
+      <Button
+        handleClick={handleConfirm}
+        buttonColor="bg-gray-500"
+        buttonText="Confirm"
+      />
+      <div>{message && <h1 className="text-red-500">{message}</h1>}</div>
     </div>
   );
 }

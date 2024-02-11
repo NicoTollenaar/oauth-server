@@ -5,6 +5,7 @@ import { Utils } from "../../utils/utils";
 import { redirect_uri } from "../../constants/urls";
 import Confirm from "./Confirm";
 import { QueryObject } from "../../types/customTypes";
+import Button from "./Button";
 
 interface LoginProps {
   loggedInStatus: boolean;
@@ -18,6 +19,7 @@ export default function Login({ loggedInStatus, queryObject }: LoginProps) {
   const [lastName, setLastName] = useState("Pieterszoon");
   const [email, setEmail] = useState("piet@email.com");
   const [password, setPassword] = useState("pietsPassword");
+
 
   async function handleLogin() {
     const loginFormData = {
@@ -37,11 +39,15 @@ export default function Login({ loggedInStatus, queryObject }: LoginProps) {
   }
 
   return (
-    <div>
+    <div className="h-[vh] w-[vw] bg-slate-500">
       {isLoggedIn ? (
         <Confirm queryObject={queryObject} />
       ) : (
-        <button onClick={handleLogin}>Login</button>
+        <Button 
+        buttonText="Login"
+        handleClick={handleLogin}
+        buttonColor={"bg-gray-500"}
+        />
       )}
     </div>
   );

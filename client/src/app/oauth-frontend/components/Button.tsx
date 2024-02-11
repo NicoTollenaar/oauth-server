@@ -1,49 +1,22 @@
 "use client";
-import { ReactElement, useState } from "react";
-import { useRouter } from "next/navigation";
-import { redirect_uri } from "@/app/constants/urls";
-import { logoutEndpoint } from "@/app/constants/urls";
+import { ReactElement } from "react";
 
 interface ButtonProps {
   buttonText: string;
-  parentFunction: () => void;
+  handleClick: () => void;
+  buttonColor: string;
 }
 
 export default function Button({
   buttonText,
-  parentFunction,
+  handleClick,
+  buttonColor,
 }: ButtonProps): ReactElement {
-  const router = useRouter();
-  const [message, setMessage] = useState<string | null>(null);
+  const styles: string = `${buttonColor} p-3 m-[5%] me-[20%] text-white font-bold text-xl hover:bg-orange-300 border border-white`;
 
-  async function handleClick() {
-    router.push(redirect_uri);
-    router.refresh();
-    localStorage.clear();
-    await logout();
-  }
-
-  async function logout() {
-    const response = await fetch(logoutEndpoint, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    const responseBody = await response.text();
-    setMessage(responseBody);
-    setTimeout(() => {
-      setMessage(null);
-    }, 1000);
-    parentFunction();
-  }
   return (
-    <div className="flex justify-end">
-      <button
-        className="m-5 bg-orange-500 text-white font-bold text-xl hover:bg-orange-300 border border-white"
-        onClick={handleClick}
-      >
-        Refresh
-      </button>
-      {message && <h1>{message}</h1>}
-    </div>
+    <button className={styles} onClick={handleClick}>
+      {buttonText}
+    </button>
   );
 }
