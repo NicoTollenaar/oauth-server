@@ -66,5 +66,5 @@ export default function useResource() {
       setResourceMessage(`catch_error in getAccessTokenResource: ${error}`);
     }
   }
-  return { resource, resourceMessage };
+  return { resource, setResource, resourceMessage, setResourceMessage };
 }

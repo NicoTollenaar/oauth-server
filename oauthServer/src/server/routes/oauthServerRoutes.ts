@@ -37,7 +37,13 @@ const router = express.Router();
 // }
 // ---------------------------------------------------------------------------
 
-router.get("/logged-in-status", async (req: Request, res: Response) => {
+router.get("/logged-in-status", (req: Request, res: Response) => {
+  console.log("In logged-in-status, logging req.sessionId:", req.sessionID);
+  console.log("In logged-in-status, logging req.session:", req.session);
+  console.log(
+    "In logged-in-status, logging req.session.user:",
+    req.session.user
+  );
   if (req.session.user) {
     return res.json({ isLoggedIn: true });
   } else {
@@ -179,6 +185,35 @@ router.post(
     }
   }
 );
+
+router.delete("/logout", (req: Request, res: Response, next: NextFunction) => {
+  console.log("In /logout, logging req.sessionId:", req.sessionID);
+  console.log("In /logout, logging req.session BEFORE destroy:", req.session);
+  console.log(
+    "In /logout, logging req.session.user destroy:",
+    req.session.user
+  );
+  if (req.session.user) {
+    req.session.destroy((err): Response => {
+      console.log("in /logout destroy callback, logging err:", err);
+      if (err) {
+        console.log("Error in dstroy session callback, logging error:", err);
+        return res.status(400).send(`Unable to logout: ${err}`);
+      } else {
+        console.log(
+          "In /logout, logging req.session AFTER destroy:",
+          req.session
+        );
+        res.clearCookie("connect.sid");
+        return res
+          .status(200)
+          .send("Logout successful (message from server /logout");
+      }
+    });
+  } else {
+    return res.status(200).send("User was already logged out");
+  }
+});
 
 export default router;
 

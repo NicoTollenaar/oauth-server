@@ -27,6 +27,7 @@ export async function isLoggedIn(
   res: Response,
   next: NextFunction
 ) {
+  console.log("In /islogged in, loggin req.session:", req.session);
   if (req.session.user) {
     next();
   } else {

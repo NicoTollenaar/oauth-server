@@ -8,6 +8,7 @@ export const redirect_uri = `${baseUrlClientFrontend}/get-resources`;
 
 export const confirmOrLoginEndpoint = `${baseUrlOauthBackend}/confirm-or-login`;
 export const loginEndpoint = `${baseUrlOauthBackend}/login`;
+export const logoutEndpoint = `${baseUrlOauthBackend}/logout`;
 export const authorisationEndpointFrontend = `${baseUrlOauthFrontend}/authorize`;
 export const authorisationEndpointBackend = `${baseUrlOauthBackend}/authorize`;
 export const tokenEndpoint = `${baseUrlOauthBackend}/oauth/token`;

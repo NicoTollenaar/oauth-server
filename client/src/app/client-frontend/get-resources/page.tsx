@@ -2,21 +2,26 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
-  authorisationEndpointFrontend,
   redirect_uri,
 } from "../../constants/urls";
 import { Utils } from "../../utils/utils";
 import useResource from "@/app/hooks/useResource";
 import { OAuthError } from "@/app/types/customTypes";
+import Button from "@/app/oauth-frontend/components/Button";
 
 export default function GetResources() {
-  const [message, setMessage] = useState<string>("");
+  const [message, setMessage] = useState<string | null>("");
   const router = useRouter();
-  const { resource, resourceMessage } = useResource();
+  const { resource, setResource, resourceMessage, setResourceMessage } = useResource();
 
   function handleClick() {
     // when implementing PKCE get code challenge and code method from client server
     initiateOauthFlow();
+  }
+
+  function reset() {
+    setResource(null);
+    setResourceMessage(null);
   }
 
   async function initiateOauthFlow(): Promise<void> {
@@ -34,6 +39,7 @@ export default function GetResources() {
 
   return (
     <>
+    <Button buttonText={"Refresh"} parentFunction={reset}/>
       <button className="text-red-500 outline-2 m-5" onClick={handleClick}>
         Get Resources - complete here!
       </button>
