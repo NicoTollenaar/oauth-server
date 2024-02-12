@@ -48,8 +48,10 @@ export default function GetResources() {
 
   return (
     <>
-    <h1 className="m-5 text-[1.5em] text-center font-extrabold">Application</h1>
-      <div className="flex justify-center gap-5">
+      <h1 className="m-[5%] text-[1.5em] text-center font-extrabold">
+        Application
+      </h1>
+      <div className="flex justify-center">
         <Button
           buttonText={"Oauth"}
           buttonColor="bg-green-500"
@@ -61,9 +63,11 @@ export default function GetResources() {
           handleClick={handleReset}
         />
       </div>
-      <div className="flex flex-col justify-center gap-10 h-[50%] w-[50%]">
-        <h1>{resource && `Resource: ${JSON.stringify(resource)}`}</h1>
-        {message && <h1>{message}</h1>}
+      <div className="flex flex-col justify-center gap-10 h-[50%] w-[50%] items-center">
+        <h1 className="w-[40%] text-left">
+          {resource && `Resource: ${JSON.stringify(resource)}`}
+        </h1>
+        {message && <h1 className="w-[40%] text-left">{message}</h1>}
       </div>
     </>
   );
