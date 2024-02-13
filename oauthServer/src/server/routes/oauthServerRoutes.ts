@@ -21,29 +21,7 @@ import {
 
 const router = express.Router();
 
-// ---------     ONLY FOR RUNNING TESTRESPONSE.TS SCRIPT ------------
-// router.get("/test", isValidated, async (req: Request, res: Response) => {
-// return res.status(200).json({ message: "SUCCESFUL DESPITE ERROR CODE!" });
-// return res.status(401).json({ message: "status code 401" });
-// return res.status(500).json({ message: "status code 500" });
-// });
-
-// async function isValidated(req: Request, res: Response, next: NextFunction) {
-//   if (req.headers.authorization === "its me!") {
-//     next();
-//   } else {
-//     return res.status(401).json({ message: "unauthorized" });
-//   }
-// }
-// ---------------------------------------------------------------------------
-
 router.get("/logged-in-status", (req: Request, res: Response) => {
-  console.log("In logged-in-status, logging req.sessionId:", req.sessionID);
-  console.log("In logged-in-status, logging req.session:", req.session);
-  console.log(
-    "In logged-in-status, logging req.session.user:",
-    req.session.user
-  );
   if (req.session.user) {
     return res.json({ isLoggedIn: true });
   } else {
@@ -187,23 +165,12 @@ router.post(
 );
 
 router.delete("/logout", (req: Request, res: Response, next: NextFunction) => {
-  console.log("In /logout, logging req.sessionId:", req.sessionID);
-  console.log("In /logout, logging req.session BEFORE destroy:", req.session);
-  console.log(
-    "In /logout, logging req.session.user destroy:",
-    req.session.user
-  );
   if (req.session.user) {
     req.session.destroy((err): Response => {
-      console.log("in /logout destroy callback, logging err:", err);
       if (err) {
-        console.log("Error in dstroy session callback, logging error:", err);
+        console.log("Error in destroy session callback, logging error:", err);
         return res.status(400).send(`Unable to logout: ${err}`);
       } else {
-        console.log(
-          "In /logout, logging req.session AFTER destroy:",
-          req.session
-        );
         res.clearCookie("connect.sid");
         return res.status(200).send("Logged out");
       }

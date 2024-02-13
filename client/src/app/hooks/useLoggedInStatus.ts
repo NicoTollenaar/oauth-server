@@ -19,5 +19,5 @@ export default function useLoggedInStatus() {
     }
     getLoggedInStatus();
   }, []);
-  return isLoggedIn;
+  return {isLoggedIn, setIsLoggedIn};
 }

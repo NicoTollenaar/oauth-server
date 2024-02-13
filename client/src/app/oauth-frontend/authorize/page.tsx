@@ -12,7 +12,7 @@ import { OAuthError } from "@/app/types/customTypes";
 export default function Authorize(): ReactElement<any, any> | undefined {
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
-  const isLoggedIn: boolean = useLoggedInStatus();
+  const {isLoggedIn}: {isLoggedIn: boolean} = useLoggedInStatus();
   const queryParams: URLSearchParams = useSearchParams();
   let queryObject: Record<string, string> = Utils.getQueryObject(queryParams);
   if (!Utils.isProfileQueryObject(queryObject)) {

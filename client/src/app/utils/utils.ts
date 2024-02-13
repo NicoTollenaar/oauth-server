@@ -15,7 +15,9 @@ import { queryParameters } from "../constants/otherConstants";
 import getAndSaveCodeVerifierAndChallenge from "../serverActions/actions";
 
 export class Utils {
-  static getQueryObject(searchParamsIterator: URLSearchParams): Record<string, string> {
+  static getQueryObject(
+    searchParamsIterator: URLSearchParams
+  ): Record<string, string> {
     let queryObject: Record<string, string> = {};
     for (const [key, value] of searchParamsIterator.entries()) {
       queryObject[`${key}`] = value;

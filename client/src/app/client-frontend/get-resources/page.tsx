@@ -1,12 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { redirect_uri } from "../../constants/urls";
 import { Utils } from "../../utils/utils";
 import useResource from "@/app/hooks/useResource";
 import { OAuthError } from "@/app/types/customTypes";
 import Button from "@/app/oauth-frontend/components/Button";
-import { logoutEndpoint } from "../../constants/urls";
+import Logout from "@/app/oauth-frontend/components/Logout";
 
 export default function GetResources() {
   const router = useRouter();
@@ -31,26 +30,25 @@ export default function GetResources() {
     localStorage.clear();
     setResource(null);
     setMessage(null);
-    await logout();
   }
 
-  async function logout() {
-    const response = await fetch(logoutEndpoint, {
-      method: "DELETE",
-      credentials: "include",
-    });
-    const responseBody = await response.text();
-    setMessage(responseBody);
-    setTimeout(() => {
-      setMessage(null);
-    }, 1000);
+  function changeMessage(newMessage: string | null): void {
+    setMessage(newMessage);
   }
 
   return (
     <>
-      <h1 className="m-[5%] text-[1.5em] text-center font-extrabold">
-        Application
-      </h1>
+      <div className="w-[vw] flex flex-row">
+        <div className="w-[30%]"></div>
+        <div className="flex justify-center w-[40%]">
+          <h1 className="text-[1.5em] text-center font-extrabold m-5">
+            Application
+          </h1>
+        </div>
+        <div className="flex justify-end w-[30%] m-5">
+          <Logout changeMessage={changeMessage} />
+        </div>
+      </div>
       <div className="flex justify-center">
         <Button
           buttonText={"Oauth"}
