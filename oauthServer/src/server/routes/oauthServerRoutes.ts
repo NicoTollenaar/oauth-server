@@ -121,7 +121,8 @@ router.post(
           dbUpdatedUserCode.accessToken?.expires === undefined
             ? 0
             : dbUpdatedUserCode.accessToken?.expires - Date.now(),
-        scope: dbUpdatedUserCode.requestedScope,
+        scope: dbUpdatedUserCode.requestedScope, // todo; check whether fits in consented scope, otherwise more narrow
+        // consented scope; see Oauth.com par 12.4 
       };
       res.set("Cache-Control", "no-store");
       return res.status(200).json(accessTokenResponse);
@@ -188,3 +189,5 @@ export default router;
 // check login credential more thoroughly
 // add expiry time to authorisation code
 // still to authenticateClient and add appropriate authorization headers in request /oauth/token
+// todo; check whether fits in consented scope, otherwise more narrow
+        // consented scope; see Oauth.com par 12.4
