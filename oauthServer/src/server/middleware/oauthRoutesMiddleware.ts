@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import Client from "../../database/models/Client.Model";
-import Code from "../../database/models/Code.Model";
+import Code, { ICode } from "../../database/models/Code.Model";
 import { redirect_uri } from "../../constants/urls";
 import { User } from "../../database/models/User.Model";
 import { Document } from "mongodb";
@@ -126,6 +126,10 @@ export async function generateAndSaveCodes(
 ) {
   const queryObject = req.body;
   const authorisationCode = crypto.randomUUID();
+  console.log(
+    "in generateAndSaveCodes, logging authorizationCiode:",
+    authorisationCode
+  );
   req.authorisationCode = authorisationCode;
   const pkceCodeChallenge = queryObject.code_challenge;
   const requestedScope = queryObject.scope.split(" ");
@@ -135,8 +139,10 @@ export async function generateAndSaveCodes(
     const dbCode = await Code.findOne({
       userId: req.session.user?.id,
       recipientClientId: queryObject.client_id,
-      redirectUri: queryObject.redirect_uri,
+      // redirectUri: queryObject.redirect_uri,
     });
+
+    console.log("in generateAndSaveCodes, logging dbCode:", dbCode);
     if (dbCode) {
       dbUpdatedCode = await Code.findByIdAndUpdate(
         dbCode._id,
@@ -151,6 +157,10 @@ export async function generateAndSaveCodes(
         { new: true } // runValidators option not working, see caveats documentation under update()
       );
       dbCode.validateSync(); // because runValidators option not working
+      console.log(
+        "in generateAndSaveCodes, logging dbUpdatedCode:",
+        dbUpdatedCode
+      );
     } else {
       const newCode = new Code({
         userId: req.session.user?.id,
@@ -164,6 +174,7 @@ export async function generateAndSaveCodes(
         redirectUri: queryObject.redirect_uri,
       });
       dbNewCode = await newCode.save();
+      console.log("in generateAndSaveCodes, logging dbNewCode:", dbNewCode);
     }
     if (dbUpdatedCode || dbNewCode) {
       next();
@@ -176,7 +187,11 @@ export async function generateAndSaveCodes(
     }
   } catch (error) {
     console.log("In catch block generateAndSaveCodes, logging error:", error);
-    return res.status(500).send(error);
+    const oauthError: OAuthError = {
+      error: "Catch_error",
+      error_description: `Catch error in generateAndSaveCodes: ${error}`,
+    };
+    return res.status(400).json(oauthError);
   }
 }
 
@@ -267,18 +282,20 @@ export async function validateRequestParameters(
   let oauthError: OAuthError | null = null;
   let statusCode: number = 400;
   try {
-    const dbCode = await Code.findOne({ "authorisationCode.identifier": code });
-    if (!dbCode) {
+    if (!code) {
       oauthError = Utils.createOauthError(
-        "invalid_grant",
-        "authorisation code invalid or missing"
+        "invalid_request",
+        "no authorisation code provided"
       );
       throw new Error();
     }
-    if (grant_type != "authorization_code") {
+    const dbCode: ICode | null = await Code.findOne({
+      "authorisationCode.identifier": code,
+    });
+    if (!dbCode) {
       oauthError = Utils.createOauthError(
-        "unsupported_grant_type",
-        "Only authorisation_code flow supported"
+        "invalid_grant",
+        "invalid authorisation code"
       );
       throw new Error();
     }

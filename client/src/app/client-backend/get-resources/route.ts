@@ -97,9 +97,7 @@ async function getAccessToken(
   }
 }
 
-async function retrieveResource(
-  accessTokenIdentifier: string
-): Promise<TokenInfo> {
+async function retrieveResource(accessToken: string): Promise<TokenInfo> {
   try {
     const response = await fetch(resourcesEndpoint, {
       method: "POST",
@@ -109,7 +107,7 @@ async function retrieveResource(
         ).toString("base64")}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: new URLSearchParams(`token=${accessTokenIdentifier}`),
+      body: new URLSearchParams(`token=${accessToken}`),
     });
     const tokenInfo: TokenInfo = await response.json();
     return tokenInfo;

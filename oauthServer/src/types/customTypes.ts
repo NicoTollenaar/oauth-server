@@ -1,4 +1,6 @@
+import { X509Certificate } from "crypto";
 import type { ObjectId } from "mongodb";
+import { JsonWebKey } from "crypto";
 
 export type CurrentUser = {
   id: ObjectId;
@@ -62,4 +64,34 @@ export interface QueryObject {
   redirect_uri: string;
   code_challenge: string;
   code_challenge_method: string;
+}
+
+export interface MetaData {
+  issuer: string;
+  authorization_endpoint: string;
+  token_endpoint: string;
+  token_endpoint_auth_signing_alg_values_supported: ["RS256", "ES256"];
+  introspection_endpoint: string;
+  revocation_endpoint: string;
+  registration_endpoint: string;
+  jwks_uri: string;
+  grant_types_supported: ["authorization_code", "implicit"];
+  response_types_supported: ["code", "code token"];
+  scopes_supported: [
+    "openid",
+    "profile",
+    "email",
+    "address",
+    "phone",
+    "offline_access"
+  ];
+  code_challenge_methods_supported: ["S256"];
+}
+
+export interface JWK extends JsonWebKey {
+  kid?: string;
+  x5u?: string;
+  x5c?: X509Certificate[];
+  x5t?: string;
+  "x5t#S256"?: string;
 }

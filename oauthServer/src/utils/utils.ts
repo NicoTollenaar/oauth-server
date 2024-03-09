@@ -21,9 +21,9 @@ export default class Utils {
     token: string,
     resourceServerId: string,
     resourceServerSecret: string
-  ) {
+  ): Promise<Response | OAuthError> {
     try {
-      const response = await fetch(introspectionEndpoint, {
+      const response: Response = await fetch(introspectionEndpoint, {
         method: "POST",
         headers: {
           Authorization: `Basic ${Buffer.from(
@@ -33,6 +33,13 @@ export default class Utils {
         },
         body: new URLSearchParams(`token=${token}`),
       });
+      if (!response.ok) {
+        const oauthError: OAuthError = {
+          error: "introspection error",
+          error_description: `Request to introspection endpoint failed`,
+        };
+        return oauthError;
+      }
       return response;
     } catch (error) {
       console.log("In catch block introspectionRequest, logging error:", error);

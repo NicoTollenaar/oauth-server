@@ -1,4 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
+import jwt, { SignOptions } from "jsonwebtoken";
+import fs from "fs";
 import {
   isLoggedIn,
   isLoggedOut,
@@ -10,14 +12,32 @@ import {
   isAuthenticatedClient,
   validateRequestParameters,
 } from "../middleware/oauthRoutesMiddleware";
-import Code from "../../database/models/Code.Model";
+import Code, { ICode } from "../../database/models/Code.Model";
 import { User } from "../../database/models/User.Model";
 import Utils from "../../utils/utils";
 import {
   AccessTokenResponse,
+  JWK,
+  MetaData,
   OAuthError,
   TokenInfo,
 } from "../../types/customTypes";
+import {
+  authorisationEndpointBackend,
+  baseUrlOauthBackend,
+  baseUrlResourceServer,
+  introspectionEndpoint,
+  registrationEndpoint,
+  revocationEndpoint,
+  tokenEndpoint,
+} from "../../constants/urls";
+import {
+  ACCESS_TOKEN_LIFETIME,
+  ID_PRIVATE_KEY_USED_FOR_SIGNING,
+  ID_PUBLIC_KEY_USED_FOR_SIGNING,
+  PRE_EXISTING_PUBLIC_KEYS_OAUTH_SERVER,
+} from "../../constants/parameters";
+import crypto from "node:crypto";
 
 const router = express.Router();
 
@@ -62,7 +82,7 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
 // This has not been implemented
 
 router.post(
-  "/oauth/token",
+  "/oauth/token-non-jwt",
   isAuthenticatedClient,
   validateRequestParameters,
   async (
@@ -71,26 +91,7 @@ router.post(
     next: NextFunction
   ): Promise<Response> => {
     const { code } = req.body;
-    if (!code) {
-      const oauthError: OAuthError = {
-        error: "no authorization code",
-        error_description:
-          "token endpoint rejected request do to lacking authorisation code",
-      };
-      return res.status(401).json(oauthError);
-    }
     try {
-      const dbUserCode = await Code.findOne({
-        "authorisationCode.identifier": code,
-      });
-      if (!dbUserCode) {
-        const oauthError: OAuthError = {
-          error: "authorization code not found",
-          error_description:
-            "token endpoint rejected request due to invalid or non-existent authorization code",
-        };
-        return res.status(401).json(oauthError);
-      }
       const accessTokenIdentifier = crypto.randomUUID();
       const dbUpdatedUserCode = await Code.findOneAndUpdate(
         { "authorisationCode.identifier": code },
@@ -101,11 +102,13 @@ router.post(
             revoked: false,
             expires: Date.now() + 2000, // expires in 2 seconds
           },
+          refreshToken: "still to be added",
         },
         { new: true }
       );
       if (dbUpdatedUserCode?.validateSync())
         throw new Error("Mongoose validation error");
+
       if (!dbUpdatedUserCode) {
         const oauthError: OAuthError = {
           error: "failed database operation",
@@ -122,8 +125,13 @@ router.post(
             ? 0
             : dbUpdatedUserCode.accessToken?.expires - Date.now(),
         scope: dbUpdatedUserCode.requestedScope, // todo; check whether fits in consented scope, otherwise more narrow
-        // consented scope; see Oauth.com par 12.4 
+        // consented scope; see Oauth.com par 12.4
+        refresh_token: "still to be added",
       };
+      console.log(
+        "In token endpoint, logging accessTokenResponse:",
+        accessTokenResponse
+      );
       res.set("Cache-Control", "no-store");
       return res.status(200).json(accessTokenResponse);
     } catch (error) {
@@ -136,6 +144,112 @@ router.post(
     }
   }
 );
+
+router.post(
+  "/oauth/token",
+  isAuthenticatedClient,
+  validateRequestParameters,
+  async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<Response> => {
+    const { code } = req.body;
+    console.log("in /oauth/token, logging code:", code);
+    try {
+      const jwtAccessToken: string | null = await createJwtAccessToken(code);
+      console.log("In token endpoint, logging jwtAccessToken:", jwtAccessToken);
+      if (!jwtAccessToken) throw new Error("createJwtAccessToken failed");
+      const dbUpdatedUserCode = await Code.findOneAndUpdate(
+        { "authorisationCode.identifier": code },
+        {
+          authorisationCode: null,
+          accessToken: {
+            identifier: jwtAccessToken,
+            revoked: false,
+            expires: Date.now() + ACCESS_TOKEN_LIFETIME, // expires in 2 seconds
+          },
+          refreshToken: "still to be added",
+        },
+        { new: true }
+      );
+      if (dbUpdatedUserCode?.validateSync())
+        throw new Error("Mongoose validation error");
+      console.log(
+        "in tokenEndpoint, logging dbUpdatedUserCode (authorisation code should be null):",
+        dbUpdatedUserCode
+      );
+      if (!dbUpdatedUserCode) {
+        const oauthError: OAuthError = {
+          error: "failed database operation",
+          error_description:
+            "updating database (exchanging authorization code for accesstoken) failed in token endpoint",
+        };
+        return res.status(401).json(oauthError);
+      }
+      const accessTokenResponse: AccessTokenResponse = {
+        access_token: dbUpdatedUserCode.accessToken?.identifier as string,
+        token_type: "Bearer",
+        expires_in:
+          dbUpdatedUserCode.accessToken?.expires === undefined
+            ? 0
+            : dbUpdatedUserCode.accessToken?.expires - Date.now(),
+        scope: dbUpdatedUserCode.requestedScope, // todo; check whether fits in consented scope, otherwise more narrow
+        // consented scope; see Oauth.com par 12.4
+        refresh_token: "still to be added",
+      };
+      res.set("Cache-Control", "no-store");
+      return res.status(200).json(accessTokenResponse);
+    } catch (error) {
+      console.log("In catch block /oauth/token, logging error:", error);
+      const oauthError: OAuthError = {
+        error: "Catch_error",
+        error_description: `Catch_error in token endpoint: ${error}`,
+      };
+      return res.status(401).json(oauthError);
+    }
+  }
+);
+
+async function createJwtAccessToken(code: string): Promise<string | null> {
+  try {
+    console.log("in createJwtAccessToken, logging code:", code);
+    const dbCode = await Code.findOne({ "authorisationCode.identifier": code });
+
+    console.log("in createJwtAccessToken, logging dbCode", dbCode);
+
+    const payload = {
+      scope: dbCode?.requestedScope,
+      client_id: dbCode?.recipientClientId,
+    };
+
+    console.log("dbCode?.userId.toString()", dbCode?.userId.toString());
+
+    const signOptions: SignOptions = {
+      algorithm: "ES256",
+      expiresIn: ACCESS_TOKEN_LIFETIME,
+      header: { typ: "at+jwt", alg: "ES256" },
+      audience: baseUrlResourceServer,
+      issuer: baseUrlOauthBackend,
+      subject: dbCode?.userId.toString(),
+      keyid: ID_PUBLIC_KEY_USED_FOR_SIGNING,
+    };
+
+    const privateKey = fs.readFileSync(
+      "./src/constants/oauthServerPrivateKey.pem",
+      "utf-8"
+    );
+
+    console.log("privateKey", privateKey);
+
+    const jwtAccessToken: string = jwt.sign(payload, privateKey, signOptions);
+
+    return jwtAccessToken;
+  } catch (error) {
+    console.log(`Catch error in createJwtAccessToken: ${error}`);
+    return null;
+  }
+}
 
 router.post(
   "/token_info",
@@ -181,6 +295,74 @@ router.delete("/logout", (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
+router.get(
+  "/.well-known/oauth-authorization-server",
+  (req: Request, res: Response, next: NextFunction) => {
+    const oauthServerMetaData: MetaData = {
+      issuer: `${baseUrlOauthBackend}`,
+      authorization_endpoint: `${authorisationEndpointBackend}`,
+      token_endpoint: `${tokenEndpoint}`,
+      token_endpoint_auth_signing_alg_values_supported: ["RS256", "ES256"],
+      introspection_endpoint: `${introspectionEndpoint}`,
+      revocation_endpoint: `${revocationEndpoint}`,
+      registration_endpoint: `${registrationEndpoint}`,
+      jwks_uri: `${baseUrlOauthBackend}/jwks.json`,
+      grant_types_supported: ["authorization_code", "implicit"],
+      response_types_supported: ["code", "code token"],
+      scopes_supported: [
+        "openid",
+        "profile",
+        "email",
+        "address",
+        "phone",
+        "offline_access",
+      ],
+      code_challenge_methods_supported: ["S256"],
+    };
+    res.status(200).json(oauthServerMetaData);
+  }
+);
+
+router.get(
+  "/jwks",
+  (req: Request, res: Response, next: NextFunction): Response => {
+    //hardcoded here, probably stored in database in real life
+    const publicKeyUsedForSigningPEM = fs.readFileSync(
+      "./src/constants/oauthServerPublicKey.pem",
+      "utf-8"
+    );
+    console.log(
+      "in jwks, logging publicKeyUsedForSigningPEM:",
+      publicKeyUsedForSigningPEM
+    );
+    const publicKeyUsedForSigningObject = crypto.createPublicKey(
+      publicKeyUsedForSigningPEM
+    );
+    console.log(
+      "in jwks, logging publicKeyUsedForSigningObject:",
+      publicKeyUsedForSigningObject
+    );
+    const publicKeyUsedForSigningJWK: JWK =
+      publicKeyUsedForSigningObject.export({
+        format: "jwk",
+      });
+
+    publicKeyUsedForSigningJWK.kid = ID_PUBLIC_KEY_USED_FOR_SIGNING;
+
+    console.log(
+      "in jwks, logging publicKeyUsedForSigningJWK:",
+      publicKeyUsedForSigningJWK
+    );
+    const publicKeysOauthServer: JWK[] =
+      PRE_EXISTING_PUBLIC_KEYS_OAUTH_SERVER.concat(publicKeyUsedForSigningJWK);
+    const jwkSet: { keys: JWK[] } = {
+      keys: publicKeysOauthServer,
+    };
+    console.log("in jwks, logging jwkSet:", jwkSet);
+    return res.status(200).json(jwkSet);
+  }
+);
+
 export default router;
 
 // todo
@@ -190,4 +372,4 @@ export default router;
 // add expiry time to authorisation code
 // still to authenticateClient and add appropriate authorization headers in request /oauth/token
 // todo; check whether fits in consented scope, otherwise more narrow
-        // consented scope; see Oauth.com par 12.4
+// consented scope; see Oauth.com par 12.4

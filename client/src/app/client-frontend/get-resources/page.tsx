@@ -15,6 +15,7 @@ export default function GetResources() {
     const scope: string = "openId+profile+email";
     const authorisationUrl: string | OAuthError =
       await Utils.buildAuthorisationUrl(scope);
+    console.log("authorisationUrl", authorisationUrl);
     if (typeof authorisationUrl !== "string") {
       setMessage(authorisationUrl.error_description);
       router.push(
