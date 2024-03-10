@@ -83,6 +83,8 @@ export default class Utils {
           username: dbUser.email,
         };
       } else {
+        // according to Oauth specs, the response should actually be inactive token.
+        // Error only when resource server authentication fails.
         return {
           error: "user not found",
           error_description: "user not found when validating acces token",

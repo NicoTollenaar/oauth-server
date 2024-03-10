@@ -1,6 +1,6 @@
-import { JWK } from "../types/customTypes";
+import { JWK, SupportedScopes } from "../types/customTypes";
 
-export const ACCESS_TOKEN_LIFETIME = 60; // 60 seconds
+export const ACCESS_TOKEN_LIFETIME = 1; // 1 seconds
 
 export const PRE_EXISTING_PUBLIC_KEYS_OAUTH_SERVER: JWK[] = [
   {
@@ -18,6 +18,15 @@ export const PRE_EXISTING_PUBLIC_KEYS_OAUTH_SERVER: JWK[] = [
     alg: "RS256",
     kid: "2011-04-29",
   },
+];
+
+export const SCOPES_SUPPORTED_BY_OAUTH_SERVER: SupportedScopes[] = [
+  "openid",
+  "profile",
+  "email",
+  "address",
+  "phone",
+  "offline_access",
 ];
 
 export const ID_PUBLIC_KEY_USED_FOR_SIGNING: string = crypto.randomUUID();

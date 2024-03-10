@@ -36,6 +36,7 @@ import {
   ID_PRIVATE_KEY_USED_FOR_SIGNING,
   ID_PUBLIC_KEY_USED_FOR_SIGNING,
   PRE_EXISTING_PUBLIC_KEYS_OAUTH_SERVER,
+  SCOPES_SUPPORTED_BY_OAUTH_SERVER,
 } from "../../constants/parameters";
 import crypto from "node:crypto";
 
@@ -80,6 +81,8 @@ router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
 // see oauth.com:
 // If an authorization code is used more than once, the authorization server must deny the subsequent requests. This is easy to accomplish if the authorization codes are stored in a database, since they can simply be marked as used. If a code is used more than once, it should be treated as an attack. If possible, the service should revoke the previous access tokens that were issued from this authorization code.
 // This has not been implemented
+
+// use this route below for reference access token (i.e. if access token not jwt)
 
 router.post(
   "/oauth/token-non-jwt",
@@ -128,10 +131,6 @@ router.post(
         // consented scope; see Oauth.com par 12.4
         refresh_token: "still to be added",
       };
-      console.log(
-        "In token endpoint, logging accessTokenResponse:",
-        accessTokenResponse
-      );
       res.set("Cache-Control", "no-store");
       return res.status(200).json(accessTokenResponse);
     } catch (error) {
@@ -155,10 +154,8 @@ router.post(
     next: NextFunction
   ): Promise<Response> => {
     const { code } = req.body;
-    console.log("in /oauth/token, logging code:", code);
     try {
       const jwtAccessToken: string | null = await createJwtAccessToken(code);
-      console.log("In token endpoint, logging jwtAccessToken:", jwtAccessToken);
       if (!jwtAccessToken) throw new Error("createJwtAccessToken failed");
       const dbUpdatedUserCode = await Code.findOneAndUpdate(
         { "authorisationCode.identifier": code },
@@ -175,10 +172,6 @@ router.post(
       );
       if (dbUpdatedUserCode?.validateSync())
         throw new Error("Mongoose validation error");
-      console.log(
-        "in tokenEndpoint, logging dbUpdatedUserCode (authorisation code should be null):",
-        dbUpdatedUserCode
-      );
       if (!dbUpdatedUserCode) {
         const oauthError: OAuthError = {
           error: "failed database operation",
@@ -199,6 +192,11 @@ router.post(
         refresh_token: "still to be added",
       };
       res.set("Cache-Control", "no-store");
+
+      // Building in a delay for testing purposes
+      // setTimeout(() => {f
+      //   return res.status(200).json(accessTokenResponse);
+      // }, ACCESS_TOKEN_LIFETIME * 2000);
       return res.status(200).json(accessTokenResponse);
     } catch (error) {
       console.log("In catch block /oauth/token, logging error:", error);
@@ -213,18 +211,12 @@ router.post(
 
 async function createJwtAccessToken(code: string): Promise<string | null> {
   try {
-    console.log("in createJwtAccessToken, logging code:", code);
     const dbCode = await Code.findOne({ "authorisationCode.identifier": code });
-
-    console.log("in createJwtAccessToken, logging dbCode", dbCode);
 
     const payload = {
       scope: dbCode?.requestedScope,
       client_id: dbCode?.recipientClientId,
     };
-
-    console.log("dbCode?.userId.toString()", dbCode?.userId.toString());
-
     const signOptions: SignOptions = {
       algorithm: "ES256",
       expiresIn: ACCESS_TOKEN_LIFETIME,
@@ -234,16 +226,11 @@ async function createJwtAccessToken(code: string): Promise<string | null> {
       subject: dbCode?.userId.toString(),
       keyid: ID_PUBLIC_KEY_USED_FOR_SIGNING,
     };
-
     const privateKey = fs.readFileSync(
       "./src/constants/oauthServerPrivateKey.pem",
       "utf-8"
     );
-
-    console.log("privateKey", privateKey);
-
     const jwtAccessToken: string = jwt.sign(payload, privateKey, signOptions);
-
     return jwtAccessToken;
   } catch (error) {
     console.log(`Catch error in createJwtAccessToken: ${error}`);
@@ -271,7 +258,7 @@ router.post(
         "In catch block validate access token route, logging error:",
         error
       );
-      return res.status(401).json({
+      return res.status(400).json({
         error: "catch block error",
         error_description: "Error in catch block in route /token_info",
       });
@@ -309,14 +296,7 @@ router.get(
       jwks_uri: `${baseUrlOauthBackend}/jwks.json`,
       grant_types_supported: ["authorization_code", "implicit"],
       response_types_supported: ["code", "code token"],
-      scopes_supported: [
-        "openid",
-        "profile",
-        "email",
-        "address",
-        "phone",
-        "offline_access",
-      ],
+      scopes_supported: SCOPES_SUPPORTED_BY_OAUTH_SERVER,
       code_challenge_methods_supported: ["S256"],
     };
     res.status(200).json(oauthServerMetaData);
@@ -331,34 +311,21 @@ router.get(
       "./src/constants/oauthServerPublicKey.pem",
       "utf-8"
     );
-    console.log(
-      "in jwks, logging publicKeyUsedForSigningPEM:",
-      publicKeyUsedForSigningPEM
-    );
+
     const publicKeyUsedForSigningObject = crypto.createPublicKey(
       publicKeyUsedForSigningPEM
     );
-    console.log(
-      "in jwks, logging publicKeyUsedForSigningObject:",
-      publicKeyUsedForSigningObject
-    );
+
     const publicKeyUsedForSigningJWK: JWK =
       publicKeyUsedForSigningObject.export({
         format: "jwk",
       });
-
     publicKeyUsedForSigningJWK.kid = ID_PUBLIC_KEY_USED_FOR_SIGNING;
-
-    console.log(
-      "in jwks, logging publicKeyUsedForSigningJWK:",
-      publicKeyUsedForSigningJWK
-    );
     const publicKeysOauthServer: JWK[] =
       PRE_EXISTING_PUBLIC_KEYS_OAUTH_SERVER.concat(publicKeyUsedForSigningJWK);
     const jwkSet: { keys: JWK[] } = {
       keys: publicKeysOauthServer,
     };
-    console.log("in jwks, logging jwkSet:", jwkSet);
     return res.status(200).json(jwkSet);
   }
 );

@@ -39,16 +39,10 @@ export async function getPublicKeyOauthServer(
   };
   try {
     const keys: JWK[] | OAuthError = await getJWKS();
-    console.log("In getJWKS, logging keys:", keys);
     if ("error" in keys) return res.status(400).json(keys as OAuthError);
     const kid: string | null = getKid(req.body.token);
-    console.log("in getPublicKeyOauthServer, logging keys:", keys);
-    console.log(
-      "in getPublicKeyOauthServer, logging Array.isArray(keys):",
-      Array.isArray(keys)
-    );
+   
     const publicJWK: JWK | undefined = keys.find((key: JWK) => key.kid === kid);
-    console.log("In getJWKS, logging publicJWK:", publicJWK);
 
     if (!publicJWK) return res.status(400).json(oauthError);
     const publicJwkInput: JsonWebKeyInput = {

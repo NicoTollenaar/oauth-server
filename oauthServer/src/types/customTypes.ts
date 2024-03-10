@@ -24,11 +24,20 @@ export interface IUser {
   ];
 }
 
+// see RFC 7662, par. 2.2
 export interface ActiveTokenInfo {
   active: boolean;
-  scope: string[];
-  clientId: string;
-  username: string;
+  scope?: string[];
+  clientId?: string;
+  username?: string;
+  token_type?: string;
+  exp?: number;
+  iat?: number;
+  nbf?: number;
+  sub?: string;
+  aud?: string;
+  iss?: string;
+  jti?: string;
 }
 export interface IInActiveTokenInfo {
   active: false;
@@ -66,6 +75,14 @@ export interface QueryObject {
   code_challenge_method: string;
 }
 
+export type SupportedScopes =
+  | "openid"
+  | "profile"
+  | "email"
+  | "address"
+  | "phone"
+  | "offline_access";
+
 export interface MetaData {
   issuer: string;
   authorization_endpoint: string;
@@ -77,14 +94,7 @@ export interface MetaData {
   jwks_uri: string;
   grant_types_supported: ["authorization_code", "implicit"];
   response_types_supported: ["code", "code token"];
-  scopes_supported: [
-    "openid",
-    "profile",
-    "email",
-    "address",
-    "phone",
-    "offline_access"
-  ];
+  scopes_supported: SupportedScopes[];
   code_challenge_methods_supported: ["S256"];
 }
 

@@ -99,27 +99,28 @@ async function getAccessToken(
 
 async function retrieveResource(accessToken: string): Promise<TokenInfo> {
   try {
-    const response = await fetch(resourcesEndpoint, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${Buffer.from(
-          `${process.env.NEXT_PUBLIC_CLIENT_ID}:${process.env.NEXT_PUBLIC_CLIENT_SECRET}`
-        ).toString("base64")}`,
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: new URLSearchParams(`token=${accessToken}`),
-    });
-    const tokenInfo: TokenInfo = await response.json();
-    return tokenInfo;
-  } catch (error) {
-    console.log(
-      "in catch block client api retrieveResource, logging error:",
-      error
-    );
-    const oauthError: OAuthError = {
-      error: "catch_error",
-      error_description: "catch_error in retrieveResource",
-    };
-    return oauthError;
-  }
-}
+      const response = await fetch(resourcesEndpoint, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${Buffer.from(
+            `${process.env.NEXT_PUBLIC_CLIENT_ID}:${process.env.NEXT_PUBLIC_CLIENT_SECRET}`
+            ).toString("base64")}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams(`token=${accessToken}`),
+        });
+        const tokenInfo: TokenInfo = await response.json();
+        return tokenInfo;
+      } catch (error) {
+        console.log(
+          "in catch block client api retrieveResource, logging error:",
+          error
+          );
+          const oauthError: OAuthError = {
+            error: "catch_error",
+            error_description: "catch_error in retrieveResource",
+          };
+          return oauthError;
+        }
+      }
+      

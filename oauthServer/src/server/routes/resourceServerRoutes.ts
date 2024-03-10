@@ -1,6 +1,6 @@
 import express, { NextFunction, Response } from "express";
 const router = express.Router();
-import jwt from "jsonwebtoken";
+import jwt, { Jwt, JwtPayload } from "jsonwebtoken";
 import Utils from "../../utils/utils";
 import { isAuthenticatedClient } from "../middleware/oauthRoutesMiddleware";
 import {
@@ -27,55 +27,50 @@ router.post(
   async (req, res) /*: Promise<Response> */ => {
     // move clientId and clientSecret to Authorisation header using Basic Auth scheme
     const token: string = req.body.token;
-    if (!token) throw new Error("accessToken null or undefined");
+    if (!token) throw new Error("access token missing in request");
     try {
-      const validatedToken = jwt.verify(
+      const { payload }: JwtPayload = jwt.verify(
         token,
         req.publicKeyObject as KeyObject,
         {
           complete: true,
           audience: baseUrlResourceServer,
           issuer: req.metadata?.issuer,
+          ignoreExpiration: true,
         }
       );
+      payload.clientId = payload.client_id;
+      delete payload.client_id;
+      console.log("payload.exp:", payload.exp);
+      console.log("Date.now()/1000:", Date.now() / 1000);
+      console.log(
+        "payload.exp <= Date.now() / 1000:",
+        payload.exp <= Date.now() / 1000
+      );
 
-      console.log("validatedToken", validatedToken);
+      const tokenInfo: TokenInfo =
+        payload.exp <= Date.now() / 1000
+          ? InActiveTokenInfo
+          : { ...payload, active: true };
 
-      // const response = await Utils.introspectionRequest(
-      //   token,
-      //   process.env.RESOURCE_SERVER_ID as string,
-      //   process.env.RESOURCE_SERVER_SECRET as string
-      // );
-      let status: number = 200;
-      // let responseBody: TokenInfo;
-      // if ("error_description" in response) {
-      //   status = 401;
-      //   responseBody = response;
-      // } else {
-      //   status = response.status;
-      //   responseBody = await response.json();
-      //   if (
-      //     "clientId" in responseBody &&
-      //     responseBody.clientId !== req.clientId
-      //   )
-      //     responseBody = InActiveTokenInfo;
-      // }
-      return res.status(status).json(validatedToken);
+      console.log("payload", payload);
+      console.log("tokenInfo", tokenInfo);
+      return res.status(200).json(tokenInfo);
     } catch (error) {
       console.log(
         "In catch block of get resources route, logging error:",
         error
       );
-      // check correct error description
       const oauthError: OAuthError = {
         error: "catch_error",
         error_description: `catch_error in route /get resources: ${error}`,
       };
-      return res.status(401).json(oauthError);
+      return res.status(400).json(oauthError);
     }
   }
 );
 
+// use this route for reference access token (i.e. if access token not jwt)
 router.post(
   "/get-resources-non-jwt",
   isAuthenticatedClient,
@@ -101,6 +96,8 @@ router.post(
       } else {
         status = response.status;
         responseBody = await response.json();
+        // can only test the below here, because only send token (not clientId) to introspection endpoint
+        // according to specs
         if (
           "clientId" in responseBody &&
           responseBody.clientId !== req.clientId

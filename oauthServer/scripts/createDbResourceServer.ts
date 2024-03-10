@@ -17,7 +17,6 @@ async function createDbResourceServer() {
       salt,
     },
   });
-  console.log("in script createDbClient, logging dbClient:", dbResourceServer);
 }
 
 createDbResourceServer().then(() => process.exit(1));

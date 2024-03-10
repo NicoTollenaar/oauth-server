@@ -7,3 +7,6 @@ export const queryParameters: string[] = [
   "code_challenge",
   "code_challenge_method",
 ];
+
+
+export const REQUESTED_SCOPE = "openId+profile+email";

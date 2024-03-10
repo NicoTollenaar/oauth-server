@@ -6,16 +6,16 @@ import useResource from "@/app/hooks/useResource";
 import { OAuthError } from "@/app/types/customTypes";
 import Button from "@/app/oauth-frontend/components/Button";
 import Logout from "@/app/oauth-frontend/components/Logout";
+import { REQUESTED_SCOPE } from "@/app/constants/otherConstants";
 
 export default function GetResources() {
   const router = useRouter();
   const { resource, setResource, message, setMessage } = useResource();
 
   async function startOauth(): Promise<void> {
-    const scope: string = "openId+profile+email";
+    const scope: string = REQUESTED_SCOPE;
     const authorisationUrl: string | OAuthError =
       await Utils.buildAuthorisationUrl(scope);
-    console.log("authorisationUrl", authorisationUrl);
     if (typeof authorisationUrl !== "string") {
       setMessage(authorisationUrl.error_description);
       router.push(
@@ -63,10 +63,10 @@ export default function GetResources() {
         />
       </div>
       <div className="flex flex-col justify-center gap-10 h-[50%] w-[50%] items-center">
-        <h1 className="w-[40%] text-left">
-          {resource && `Resource: ${JSON.stringify(resource)}`}
-        </h1>
-        {message && <h1 className="w-[40%] text-left">{message}</h1>}
+        <pre className="w-[40%] text-left">
+          {resource && `Resource: ${JSON.stringify(resource, null, 2)}`}
+        </pre>
+        {message && <h2 className="w-[40%] text-left">{message}</h2>}
       </div>
     </>
   );

@@ -126,10 +126,6 @@ export async function generateAndSaveCodes(
 ) {
   const queryObject = req.body;
   const authorisationCode = crypto.randomUUID();
-  console.log(
-    "in generateAndSaveCodes, logging authorizationCiode:",
-    authorisationCode
-  );
   req.authorisationCode = authorisationCode;
   const pkceCodeChallenge = queryObject.code_challenge;
   const requestedScope = queryObject.scope.split(" ");
@@ -141,8 +137,6 @@ export async function generateAndSaveCodes(
       recipientClientId: queryObject.client_id,
       // redirectUri: queryObject.redirect_uri,
     });
-
-    console.log("in generateAndSaveCodes, logging dbCode:", dbCode);
     if (dbCode) {
       dbUpdatedCode = await Code.findByIdAndUpdate(
         dbCode._id,
@@ -157,10 +151,6 @@ export async function generateAndSaveCodes(
         { new: true } // runValidators option not working, see caveats documentation under update()
       );
       dbCode.validateSync(); // because runValidators option not working
-      console.log(
-        "in generateAndSaveCodes, logging dbUpdatedCode:",
-        dbUpdatedCode
-      );
     } else {
       const newCode = new Code({
         userId: req.session.user?.id,
@@ -174,7 +164,6 @@ export async function generateAndSaveCodes(
         redirectUri: queryObject.redirect_uri,
       });
       dbNewCode = await newCode.save();
-      console.log("in generateAndSaveCodes, logging dbNewCode:", dbNewCode);
     }
     if (dbUpdatedCode || dbNewCode) {
       next();
@@ -254,6 +243,7 @@ export async function isAuthenticatedResourceServer(
   if (dbResourceServer && isHashEqual) {
     next();
   } else {
+    res.set("WWW-Authenticate", "Bearer");
     return res.status(401).json({
       error: "invalid_client",
       error_description: "The client authentication was invalid",

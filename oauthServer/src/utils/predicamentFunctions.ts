@@ -8,7 +8,7 @@ export default class TypePredicament {
   static isActiveTokenInfo(
     object: ActiveTokenInfo | IInActiveTokenInfo | OAuthError
   ): object is ActiveTokenInfo {
-    return "clientId" in object;
+    return "client_id" in object;
   }
   static isAccesTokenValidationError(
     object: Response | ActiveTokenInfo | IInActiveTokenInfo | OAuthError
