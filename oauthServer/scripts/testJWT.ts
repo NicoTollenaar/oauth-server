@@ -22,11 +22,11 @@ const exportedPrivateKey: string | Buffer = keyPair.privateKey.export({
   format: "pem",
 });
 
-fs.writeFileSync(
-  "../src/constants/oauthServerPrivateKey.pem",
-  exportedPrivateKey,
-  "utf-8"
-);
+// fs.writeFileSync(
+//   "../src/constants/oauthServerPrivateKey.pem",
+//   exportedPrivateKey,
+//   "utf-8"
+// );
 
 const exportedPublicKey: string | Buffer = keyPair.publicKey.export({
   type: "spki",
@@ -34,7 +34,7 @@ const exportedPublicKey: string | Buffer = keyPair.publicKey.export({
 });
 
 fs.writeFileSync(
-  "../src/constants/oauthServerPublicKey.pem",
+  "../src/constants/oauthServerPublicKeyRubbish.pem",
   exportedPublicKey,
   "utf-8"
 );

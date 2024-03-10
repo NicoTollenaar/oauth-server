@@ -23,16 +23,19 @@ export default class Utils {
     resourceServerSecret: string
   ): Promise<Response | OAuthError> {
     try {
-      const response: Response = await fetch(introspectionEndpoint, {
-        method: "POST",
-        headers: {
-          Authorization: `Basic ${Buffer.from(
-            `${resourceServerId}:${resourceServerSecret}`
-          ).toString("base64")}`,
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: new URLSearchParams(`token=${token}`),
-      });
+      const response: Response = await fetch(
+        introspectionEndpoint,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${Buffer.from(
+              `${resourceServerId}:${resourceServerSecret}`
+            ).toString("base64")}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: new URLSearchParams(`token=${token}`),
+        }
+      );
       if (!response.ok) {
         const oauthError: OAuthError = {
           error: "introspection error",

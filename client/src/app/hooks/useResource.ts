@@ -46,7 +46,7 @@ export default function useResource() {
       );
       if (!tokenInfo)
         throw new Error("requestAccessTokenAndResource returned null");
-      setResource(JSON.stringify(tokenInfo));
+      setResource(JSON.stringify(tokenInfo, null, 2));
       if ("error" in tokenInfo) {
         setResource(
           `error: ${tokenInfo.error}; error_description: ${tokenInfo.error_description}`

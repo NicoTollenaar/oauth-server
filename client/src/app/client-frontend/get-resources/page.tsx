@@ -37,6 +37,8 @@ export default function GetResources() {
     setMessage(newMessage);
   }
 
+  // const resourceArray = Object.entries(resource);
+
   return (
     <>
       <div className="w-[vw] flex flex-row">
@@ -62,11 +64,15 @@ export default function GetResources() {
           handleClick={handleReset}
         />
       </div>
-      <div className="flex flex-col justify-center gap-10 h-[50%] w-[50%] items-center">
-        <pre className="w-[40%] text-left">
-          {resource && `Resource: ${JSON.stringify(resource, null, 2)}`}
-        </pre>
-        {message && <h2 className="w-[40%] text-left">{message}</h2>}
+      <div className="flex flex-col justify-center gap-5 h-[50%] w-[50%] items-center ms-[20%]">
+        <h1 className="font-bold text-xl text-left self-start mt-5">
+          {resource && "Resource:"}
+        </h1>
+
+        <pre className="self-start text-left">{resource && `${resource}`}</pre>
+        {message && (
+          <h2 className="self-start text-left text-lg font-bold">{message}</h2>
+        )}
       </div>
     </>
   );

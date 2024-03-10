@@ -41,31 +41,29 @@ router.post(
       );
       payload.clientId = payload.client_id;
       delete payload.client_id;
-      console.log("payload.exp:", payload.exp);
-      console.log("Date.now()/1000:", Date.now() / 1000);
-      console.log(
-        "payload.exp <= Date.now() / 1000:",
-        payload.exp <= Date.now() / 1000
-      );
 
       const tokenInfo: TokenInfo =
         payload.exp <= Date.now() / 1000
           ? InActiveTokenInfo
           : { ...payload, active: true };
 
-      console.log("payload", payload);
       console.log("tokenInfo", tokenInfo);
       return res.status(200).json(tokenInfo);
     } catch (error) {
       console.log(
         "In catch block of get resources route, logging error:",
+        typeof error,
         error
       );
       const oauthError: OAuthError = {
         error: "catch_error",
         error_description: `catch_error in route /get resources: ${error}`,
       };
-      return res.status(400).json(oauthError);
+      const response =
+        error == "JsonWebTokenError: invalid signature"
+          ? InActiveTokenInfo
+          : oauthError;
+      return res.status(400).json(response);
     }
   }
 );
