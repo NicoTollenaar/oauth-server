@@ -230,6 +230,7 @@ export async function isAuthenticatedResourceServer(
   const { id, secret } = Utils.extractCredentialsFromBasicAuthHeader(
     req.headers.authorization
   );
+
   const dbResourceServer = await ResourceServer.findOne({
     resourceServerId: id,
   }).populate("hashedResourceServerSecret");

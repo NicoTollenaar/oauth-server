@@ -18,6 +18,8 @@ import {
 } from "../middleware/resourceServerMiddleware";
 import { KeyObject } from "crypto";
 import { baseUrlResourceServer, resourcesEndpoint } from "../../constants/urls";
+import { User } from "../../database/models/User.Model";
+import { ObjectId } from "mongodb";
 
 router.post(
   "/get-resources",
@@ -42,12 +44,20 @@ router.post(
       payload.clientId = payload.client_id;
       delete payload.client_id;
 
-      const tokenInfo: TokenInfo =
+      // the below assumes the authorization server and the resource server
+      // share the same user database
+      const [dbUser] = await User.find({ _id: new ObjectId(payload.sub) });
+      if (!dbUser) throw new Error("User not found");
+
+      payload.email = dbUser.email;
+      
+      let tokenInfo: TokenInfo =
         payload.exp <= Date.now() / 1000
           ? InActiveTokenInfo
           : { ...payload, active: true };
 
-      console.log("tokenInfo", tokenInfo);
+      if (payload.clientId !== req.clientId) tokenInfo = InActiveTokenInfo;
+
       return res.status(200).json(tokenInfo);
     } catch (error) {
       console.log(

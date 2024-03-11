@@ -15,7 +15,6 @@ async function createDbClient() {
       salt,
     },
   });
-  console.log("in script createDbClient, logging dbClient:", dbClient);
 }
 
 createDbClient().then(() => process.exit(1));

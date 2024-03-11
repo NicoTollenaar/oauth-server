@@ -55,10 +55,6 @@ export default function useResource() {
       } else if (tokenInfo.active) {
         setMessage("Request successful!");
       } else {
-        console.log(
-          "In getAccessTokenAndResources, logging tokenInfo:",
-          tokenInfo
-        );
         setMessage(
           `accesstoken expired, invalid or non-existent: ${JSON.stringify(
             tokenInfo
