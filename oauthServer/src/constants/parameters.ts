@@ -1,6 +1,7 @@
 import { JWK, SupportedScopes } from "../types/customTypes";
 
 export const ACCESS_TOKEN_LIFETIME = 1; // 1 seconds
+export const REFRESH_TOKEN_LIFETIME = 10; // 1 seconds
 
 export const PRE_EXISTING_PUBLIC_KEYS_OAUTH_SERVER: JWK[] = [
   {

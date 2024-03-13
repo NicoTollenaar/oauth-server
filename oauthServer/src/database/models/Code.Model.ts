@@ -13,7 +13,11 @@ export interface ICode extends Document {
     revoked: boolean;
     expires: number;
   };
-  refreshToken?: string;
+  refreshToken?: {
+    identifier: string;
+    revoked: boolean;
+    expires: number;
+  };
   idToken?: string;
   userId: Types.ObjectId;
   recipientClientId: string;
@@ -73,10 +77,32 @@ const codeSchema: Schema = new Schema<ICode, CodeModel, ICodeMethods>({
     }, //unix timestamp indicating when token will expire.
   },
   refreshToken: {
-    type: String,
-    trim: true,
-    unique: true,
-  }, // should be unique (reset)
+    identifier: {
+      type: String,
+      trim: true,
+      unique: true,
+      required: function () {
+        return !!this.accessToken?.identifier;
+      },
+      validate: {
+        validator: nullIfAuthorisationCode,
+        message: "refresh token cannot co-exist with authorization code",
+      },
+    },
+    revoked: {
+      type: Boolean,
+      required: function () {
+        return !!this.accessToken?.identifier;
+      },
+    },
+    expires: {
+      type: Number,
+      trim: true,
+      required: function () {
+        return !!this.accessToken?.identifier;
+      },
+    }, //unix timestamp indicating when token will expire.
+  },
   idToken: { type: String, unique: true, trim: true },
   userId: { type: Schema.Types.ObjectId, ref: "User" },
   recipientClientId: {

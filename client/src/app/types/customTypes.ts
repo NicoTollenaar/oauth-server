@@ -40,3 +40,10 @@ export interface AccessTokenResponse {
   refresh_token?: string | "" | null | undefined;
   scope?: string[] | "" | null | undefined;
 }
+
+export interface FormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}

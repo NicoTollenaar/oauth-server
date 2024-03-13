@@ -36,6 +36,7 @@ import {
   ID_PRIVATE_KEY_USED_FOR_SIGNING,
   ID_PUBLIC_KEY_USED_FOR_SIGNING,
   PRE_EXISTING_PUBLIC_KEYS_OAUTH_SERVER,
+  REFRESH_TOKEN_LIFETIME,
   SCOPES_SUPPORTED_BY_OAUTH_SERVER,
 } from "../../constants/parameters";
 import crypto from "node:crypto";
@@ -164,14 +165,19 @@ router.post(
           accessToken: {
             identifier: jwtAccessToken,
             revoked: false,
-            expires: Date.now() + ACCESS_TOKEN_LIFETIME, // expires in 2 seconds
+            expires: Date.now() + ACCESS_TOKEN_LIFETIME,
           },
-          refreshToken: "still to be added",
+          refreshToken: {
+            identifier: crypto.randomUUID(),
+            revoked: false,
+            expires: Date.now() + REFRESH_TOKEN_LIFETIME,
+          },
         },
         { new: true }
       );
       if (dbUpdatedUserCode?.validateSync())
         throw new Error("Mongoose validation error");
+      console.log("dbUpdatedUserCode:", dbUpdatedUserCode);
       if (!dbUpdatedUserCode) {
         const oauthError: OAuthError = {
           error: "failed database operation",
