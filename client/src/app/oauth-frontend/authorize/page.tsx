@@ -8,6 +8,7 @@ import { QueryObject } from "@/app/types/customTypes";
 import { redirect_uri } from "@/app/constants/urls";
 import { ReactElement, useState } from "react";
 import { OAuthError } from "@/app/types/customTypes";
+import Logout from "../components/Logout";
 
 export default function Authorize(): ReactElement<any, any> | undefined {
   const [message, setMessage] = useState<string | null>(null);
@@ -50,11 +51,18 @@ export default function Authorize(): ReactElement<any, any> | undefined {
     }
   }
 
+  function changeMessage(newMessage: string | null): void {
+    setMessage(newMessage);
+  }
+
   return (
     <div className="h-screen w-[vw] bg-slate-500">
       <h1 className="m-5 text-[1.5em] text-center font-extrabold">
         Authorisation Server
       </h1>
+      <div className="me-[10%]">
+        <Logout changeMessage={changeMessage} />
+      </div>
       <div>
         {isLoggedIn ? (
           <Confirm

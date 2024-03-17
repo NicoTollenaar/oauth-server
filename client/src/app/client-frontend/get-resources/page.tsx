@@ -37,18 +37,10 @@ export default function GetResources() {
     setMessage(newMessage);
   }
 
-  // const resourceArray = Object.entries(resource);
-
   return (
     <>
-      <div className="w-[vw] flex flex-row">
-        <div className="w-[30%]"></div>
-        <div className="flex justify-center w-[40%]">
-          <h1 className="text-[1.5em] text-center font-extrabold m-5">
-            Application
-          </h1>
-        </div>
-        <div className="flex justify-end w-[30%] m-5">
+      <div className="w-[vw] flex flex-row justify-end">
+        <div className="me-[10%]">
           <Logout changeMessage={changeMessage} />
         </div>
       </div>

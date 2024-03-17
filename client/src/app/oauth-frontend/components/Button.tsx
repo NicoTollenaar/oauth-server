@@ -14,7 +14,7 @@ export default function Button({
   buttonColor,
   disabled,
 }: ButtonProps): ReactElement {
-  const styles: string = `${buttonColor} p-3 m-[5%] text-white font-bold text-xl text-center hover:bg-orange-300 border border-white`;
+  const styles: string = `${buttonColor} p-3 text-white font-bold text-xl text-center hover:bg-orange-300 border border-white whitespace-nowrap`;
 
   return (
     <button

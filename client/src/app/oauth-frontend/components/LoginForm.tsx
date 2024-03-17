@@ -13,7 +13,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form className="flex flex-col gap-5">
+    <form className="flex flex-col gap-5 w-[50%]">
       <InputField
         name="firstName"
         type="text"

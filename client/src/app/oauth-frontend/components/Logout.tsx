@@ -32,7 +32,7 @@ export default function Logout({ changeMessage }: LogoutProps): ReactElement {
       <Button
         buttonText={isLoggedIn ? "Logout" : "Logged out"}
         handleClick={handleLogout}
-        buttonColor={isLoggedIn ? "bg-yellow-500" : "bg-orange-300"}
+        buttonColor={isLoggedIn ? "bg-orange-500" : "bg-orange-300"}
         disabled={!isLoggedIn}
       />
     </>
