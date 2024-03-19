@@ -15,7 +15,7 @@ export default function OAuthNavBar({
     <section className="w-[vw] flex flex-col">
       <div className="w-[100%] flex flex-row justify-center">
         <div className="w-[25%]">
-          <div className="m-10">
+          <div className="mt-10 ms-10">
             <Logout changeMessage={() => {}} />
           </div>
         </div>
@@ -27,14 +27,14 @@ export default function OAuthNavBar({
         <div className="w-[25%] flex flex-row justify-end mt-10 me-10">
           <Link href={redirect_uri}>
             <Button
-              buttonText={"Back"}
+              buttonText={"Client App"}
               buttonColor="bg-orange-500"
               handleClick={() => {}}
             />
           </Link>
         </div>
       </div>
-      <div>{children}</div>
+      <div className="children-div">{children}</div>
     </section>
   );
 }

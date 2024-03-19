@@ -17,12 +17,12 @@ export default function ClientNavBar({
       ? clientLoginUrl
       : redirect_uri;
   const linkText =
-    pathName === "/client-frontend/get-resources" ? "Login" : "Back";
+    pathName === "/client-frontend/get-resources" ? "Login Page" : "Back";
 
   return (
     <section className="w-[vw] flex flex-col">
       <div className="w-[100%] flex flex-row justify-center">
-        <div className="w-[25%]">
+        <div className="w-[25%] flex flex-row justify-start mt-10 ms-10">
           <Link href={"http://localhost:3000/oauth-frontend/login-or-signin"}>
             <Button
               buttonText={"OAuth Server"}
@@ -46,7 +46,7 @@ export default function ClientNavBar({
           </Link>
         </div>
       </div>
-      <div>{children}</div>
+      <div className="children-div-client">{children}</div>
     </section>
   );
 }

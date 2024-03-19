@@ -33,20 +33,20 @@ export default function GetResources() {
     setMessage(null);
   }
 
-  function changeMessage(newMessage: string | null): void {
-    setMessage(newMessage);
-  }
+  // function changeMessage(newMessage: string | null): void {
+  //   setMessage(newMessage);
+  // }
 
   return (
-    <>
-      <div className="w-[vw] flex flex-row justify-end">
-        <div className="me-[10%]">
+    <div className="flex flex-col gap-1 justify-between">
+      {/* <div className="w-[vw] flex flex-row justify-end"> */}
+      {/* <div className="me-[10%]">
           <Logout changeMessage={changeMessage} />
-        </div>
-      </div>
-      <div className="flex justify-center">
+        </div> */}
+      {/* </div> */}
+      <div className="mt-5 w-[75%] flex justify-around self-center">
         <Button
-          buttonText={"Oauth"}
+          buttonText={"OAuth Flow"}
           buttonColor="bg-green-500"
           handleClick={startOauth}
         />
@@ -56,7 +56,7 @@ export default function GetResources() {
           handleClick={handleReset}
         />
       </div>
-      <div className="flex flex-col justify-center gap-5 h-[50%] w-[50%] items-center ms-[20%]">
+      <div className="flex flex-col justify-center gap-5 h-[50%] w-[75%] items-center ms-[20%]">
         <h1 className="font-bold text-xl text-left self-start mt-5">
           {resource && "Resource:"}
         </h1>
@@ -66,7 +66,7 @@ export default function GetResources() {
           <h2 className="self-start text-left text-lg font-bold">{message}</h2>
         )}
       </div>
-    </>
+    </div>
   );
 }
 

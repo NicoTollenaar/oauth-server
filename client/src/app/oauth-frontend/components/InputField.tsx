@@ -24,7 +24,7 @@ export default function InputField({
 
   return (
     <input
-      className="text-lg border-2 rounded-md text-black"
+      className="text-lg border-2 rounded-md text-black p-2"
       name={name}
       type={type}
       placeholder={placeholder}
