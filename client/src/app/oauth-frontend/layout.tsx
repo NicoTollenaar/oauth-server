@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import Button from "../components/Button";
+import Button from "./components/Button";
 import { redirect_uri } from "@/app/constants/urls";
-import Logout from "../components/Logout";
+import Logout from "./components/Logout";
 
 export default function OAuthNavBar({
   children,
@@ -14,10 +14,8 @@ export default function OAuthNavBar({
   return (
     <section className="w-[vw] flex flex-col">
       <div className="w-[100%] flex flex-row justify-center">
-        <div className="w-[25%]">
-          <div className="mt-10 ms-10">
-            <Logout changeMessage={() => {}} />
-          </div>
+        <div className="w-[25%] mt-10 ms-10">
+          <Logout changeMessage={() => {}} server="oauth" />
         </div>
         <div className="w-[50%] flex flex-row justify-center">
           <h1 className="mt-10 text-[1.5em] text-center font-extrabold m-5">

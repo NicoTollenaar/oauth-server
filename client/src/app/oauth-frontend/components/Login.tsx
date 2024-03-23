@@ -27,6 +27,7 @@ export default function Login({ queryObject, handlerFunction }: LoginProps) {
     };
     try {
       const response = await Utils.postLoginRequest(loginFormData);
+      console.log("response:", response);
       if (response?.ok) {
         handlerFunction();
       } else {
@@ -43,7 +44,7 @@ export default function Login({ queryObject, handlerFunction }: LoginProps) {
   }
 
   return (
-    <div className="h-[vh] w-[vw] bg-slate-500 flex flex-col items-center gap-12">
+    <div className="h-[vh] w-[vw] flex flex-col items-center gap-12 mt-[5%]">
       <ConsentText queryObject={queryObject} />
       <div className="flex justify-center gap-20">
         <Button

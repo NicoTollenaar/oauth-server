@@ -1,5 +1,4 @@
 "use client";
-import Button from "@/app/oauth-frontend/components/Button";
 import LoginForm from "@/app/oauth-frontend/components/LoginForm";
 export default function LogOrSignInClient() {
   function handleLogin() {
@@ -8,5 +7,9 @@ export default function LogOrSignInClient() {
   const handleSubmit = () => {
     console.log("called handleSubmit");
   };
-  return <LoginForm handleLogin={handleLogin} handleSubmit={handleSubmit} />;
+  return (
+    <div className="h-[100vh] bg-[darkblue]">
+      <LoginForm handleLogin={handleLogin} handleSubmit={handleSubmit} />
+    </div>
+  );
 }

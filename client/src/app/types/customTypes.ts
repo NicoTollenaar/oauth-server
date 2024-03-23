@@ -47,3 +47,5 @@ export interface FormData {
   email: string;
   password: string;
 }
+
+export type ServerType = "client" | "oauth";

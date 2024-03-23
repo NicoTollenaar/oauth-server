@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Button from "../oauth-frontend/components/Button";
 import { clientLoginUrl, redirect_uri } from "../constants/urls";
+import Logout from "../oauth-frontend/components/Logout";
 
 export default function ClientNavBar({
   children,
@@ -21,15 +22,19 @@ export default function ClientNavBar({
 
   return (
     <section className="w-[vw] flex flex-col">
-      <div className="w-[100%] flex flex-row justify-center">
+      <div className="w-[100%] flex flex-row justify-center bg-[darkblue]">
         <div className="w-[25%] flex flex-row justify-start mt-10 ms-10">
-          <Link href={"http://localhost:3000/oauth-frontend/login-or-signin"}>
-            <Button
-              buttonText={"OAuth Server"}
-              buttonColor="bg-orange-500"
-              handleClick={() => {}}
-            />
-          </Link>
+          {href === redirect_uri ? (
+            <Logout changeMessage={() => {}} server="client" />
+          ) : (
+            <Link href={"http://localhost:3000/oauth-frontend/login-or-signin"}>
+              <Button
+                buttonText={"OAuth Server"}
+                buttonColor="bg-orange-500"
+                handleClick={() => {}}
+              />
+            </Link>
+          )}
         </div>
         <div className="w-[50%] flex flex-row justify-center">
           <h1 className="mt-10 text-[1.5em] text-center font-extrabold m-5">
@@ -46,7 +51,7 @@ export default function ClientNavBar({
           </Link>
         </div>
       </div>
-      <div className="children-div-client">{children}</div>
+      <div>{children}</div>
     </section>
   );
 }

@@ -5,7 +5,6 @@ import { Utils } from "../../utils/utils";
 import useResource from "@/app/hooks/useResource";
 import { OAuthError } from "@/app/types/customTypes";
 import Button from "@/app/oauth-frontend/components/Button";
-import Logout from "@/app/oauth-frontend/components/Logout";
 import { REQUESTED_SCOPE } from "@/app/constants/otherConstants";
 
 export default function GetResources() {
@@ -38,7 +37,7 @@ export default function GetResources() {
   // }
 
   return (
-    <div className="flex flex-col gap-1 justify-between">
+    <div className="flex flex-col justify-center gap-5 h-[100vh] bg-[darkblue]">
       {/* <div className="w-[vw] flex flex-row justify-end"> */}
       {/* <div className="me-[10%]">
           <Logout changeMessage={changeMessage} />

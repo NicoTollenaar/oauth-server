@@ -1,9 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
-import { loggedInStatusEndpoint } from "../constants/urls";
+import {
+  loggedInStatusEndpointClient,
+  loggedInStatusEndpointOAuth,
+} from "../constants/urls";
+import { ServerType } from "../types/customTypes";
 
-export default function useLoggedInStatus() {
+export default function useLoggedInStatus(server: ServerType) {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const loggedInStatusEndpoint: string =
+    server === "oauth"
+      ? loggedInStatusEndpointOAuth
+      : loggedInStatusEndpointClient;
 
   useEffect(() => {
     async function getLoggedInStatus() {
@@ -19,5 +27,5 @@ export default function useLoggedInStatus() {
     }
     getLoggedInStatus();
   }, []);
-  return {isLoggedIn, setIsLoggedIn};
+  return { isLoggedIn, setIsLoggedIn };
 }

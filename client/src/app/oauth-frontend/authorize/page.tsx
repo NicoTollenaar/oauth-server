@@ -8,12 +8,12 @@ import { QueryObject } from "@/app/types/customTypes";
 import { redirect_uri } from "@/app/constants/urls";
 import { ReactElement, useState } from "react";
 import { OAuthError } from "@/app/types/customTypes";
-import Logout from "../components/Logout";
 
 export default function Authorize(): ReactElement<any, any> | undefined {
   const [message, setMessage] = useState<string | null>(null);
   const router = useRouter();
-  const {isLoggedIn}: {isLoggedIn: boolean} = useLoggedInStatus();
+  const { isLoggedIn }: { isLoggedIn: boolean } = useLoggedInStatus("oauth");
+  console.log("isLoggedIn:", isLoggedIn);
   const queryParams: URLSearchParams = useSearchParams();
   let queryObject: Record<string, string> = Utils.getQueryObject(queryParams);
   if (!Utils.isProfileQueryObject(queryObject)) {
@@ -56,13 +56,13 @@ export default function Authorize(): ReactElement<any, any> | undefined {
   }
 
   return (
-    <div className="h-screen w-[vw] bg-slate-500">
-      <h1 className="m-5 text-[1.5em] text-center font-extrabold">
+    <div className="h-screen w-[vw]">
+      {/* <h1 className="m-5 text-[1.5em] text-center font-extrabold">
         Authorisation Server
       </h1>
       <div className="me-[10%]">
-        <Logout changeMessage={changeMessage} />
-      </div>
+        <Logout changeMessage={changeMessage} server="oauth" />
+      </div> */}
       <div>
         {isLoggedIn ? (
           <Confirm

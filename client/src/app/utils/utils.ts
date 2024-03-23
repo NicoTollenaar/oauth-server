@@ -2,8 +2,9 @@ import {
   authorisationEndpointBackend,
   authorisationEndpointFrontend,
   redirect_uri,
-  loginEndpoint,
   clientBackendGetResourcesEndpoint,
+  loggedInStatusEndpointOAuth,
+  loginEndpointOAuth,
 } from "../constants/urls";
 import {
   LoginFormData,
@@ -48,10 +49,12 @@ export class Utils {
     }
   }
 
-  static async postLoginRequest(loginFormData: LoginFormData) {
+  static async postLoginRequest(
+    loginFormData: LoginFormData
+  ): Promise<Response | void> {
     const body = JSON.stringify(loginFormData);
     try {
-      const response = await fetch(loginEndpoint, {
+      const response: Response = await fetch(loginEndpointOAuth, {
         method: "POST",
         credentials: "include",
         headers: {
