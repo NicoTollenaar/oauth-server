@@ -9,7 +9,7 @@ export default function LogOrSignInClient() {
   };
   return (
     <div className="h-[100vh] bg-[darkblue]">
-      <LoginForm handleLogin={handleLogin} handleSubmit={handleSubmit} />
+      <LoginForm server="client" />
     </div>
   );
 }

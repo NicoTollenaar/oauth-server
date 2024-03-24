@@ -4,9 +4,10 @@ import { ReactElement } from "react";
 
 interface InputFieldProps {
   name: string;
+  value: string;
   type: string;
   placeholder: string;
-  changeFormData: (field: string, value: string) => void;
+  changeFormData: (e: ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function InputField({
@@ -14,13 +15,14 @@ export default function InputField({
   type,
   placeholder,
   changeFormData,
+  value,
 }: InputFieldProps): ReactElement {
-  const [input, setInput] = useState<string>("");
+  // const [input, setInput] = useState<string>("");
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    setInput(e.target.value);
-    changeFormData(name, e.target.value);
-  }
+  // function handleChange(e: ChangeEvent<HTMLInputElement>) {
+  //   setInput(e.target.value);
+  //   changeFormData(name, e.target.value);
+  // }
 
   return (
     <input
@@ -28,10 +30,8 @@ export default function InputField({
       name={name}
       type={type}
       placeholder={placeholder}
-      value={input}
-      onChange={(e) => {
-        handleChange(e);
-      }}
+      value={value}
+      onChange={changeFormData}
     />
   );
 }

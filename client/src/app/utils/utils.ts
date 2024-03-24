@@ -50,11 +50,12 @@ export class Utils {
   }
 
   static async postLoginRequest(
-    loginFormData: LoginFormData
+    loginFormData: LoginFormData,
+    loginEndpoint: string
   ): Promise<Response | void> {
     const body = JSON.stringify(loginFormData);
     try {
-      const response: Response = await fetch(loginEndpointOAuth, {
+      const response: Response = await fetch(loginEndpoint, {
         method: "POST",
         credentials: "include",
         headers: {

@@ -8,7 +8,9 @@ export const redirect_uri = `${baseUrlClientFrontend}/get-resources`;
 
 export const confirmOrLoginEndpoint = `${baseUrlOauthBackend}/confirm-or-login`;
 export const loginEndpointOAuth = `${baseUrlOauthBackend}/login`;
+export const signupEndpointOAuth = `${baseUrlOauthBackend}/signup`;
 export const loginEndpointClient = `${baseUrlClientBackend}/login`;
+export const signupEndpointClient = `${baseUrlClientBackend}/signup`;
 export const logoutOAuthEndpoint = `${baseUrlOauthBackend}/logout`;
 export const logoutClientEndpoint = `${baseUrlClientBackend}/logout`;
 export const authorisationEndpointFrontend = `${baseUrlOauthFrontend}/authorize`;
