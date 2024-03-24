@@ -8,6 +8,7 @@ interface InputFieldProps {
   type: string;
   placeholder: string;
   changeFormData: (e: ChangeEvent<HTMLInputElement>) => void;
+  required: boolean;
 }
 
 export default function InputField({
@@ -16,6 +17,7 @@ export default function InputField({
   placeholder,
   changeFormData,
   value,
+  required
 }: InputFieldProps): ReactElement {
   // const [input, setInput] = useState<string>("");
 
@@ -32,6 +34,7 @@ export default function InputField({
       placeholder={placeholder}
       value={value}
       onChange={changeFormData}
+      required={required}
     />
   );
 }

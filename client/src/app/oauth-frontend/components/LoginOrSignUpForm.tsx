@@ -5,6 +5,8 @@ import { FormData } from "@/app/types/customTypes";
 import { ReactElement } from "react";
 import Button from "./Button";
 import {
+  baseUrlClientFrontend,
+  clientLoginUrl,
   loginEndpointClient,
   loginEndpointOAuth,
   redirect_uri,
@@ -12,15 +14,18 @@ import {
   signupEndpointOAuth,
 } from "@/app/constants/urls";
 import { Utils } from "@/app/utils/utils";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ServerType } from "@/app/types/customTypes";
 
-interface LoginFormProps {
+interface FormProps {
   server: ServerType;
 }
 
-export default function LoginForm({ server }: LoginFormProps): ReactElement {
+export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
   const router = useRouter();
+  const pathName = usePathname();
+  const lastPathSegment = pathName.split("/")[pathName.split("/").length - 1];
+  console.log("plastPathSegment:", lastPathSegment);
   const { formData, changeFormData } = useFormData<FormData>({
     firstName: "",
     lastName: "",
@@ -78,26 +83,33 @@ export default function LoginForm({ server }: LoginFormProps): ReactElement {
     <div className="flex flex-row justify-center pt-10 mb-10 w-[vw]">
       <div className="w-[50%]">
         <form className="flex flex-col gap-5">
-          <InputField
-            name="firstName"
-            value={formData.firstName}
-            type="text"
-            placeholder="First Name"
-            changeFormData={changeFormData}
-          />
-          <InputField
-            name="lastName"
-            value={formData.lastName}
-            type="text"
-            placeholder="Last Name"
-            changeFormData={changeFormData}
-          />
+          {lastPathSegment === "login" ? (
+            <div className="flex flex-col gap-5">
+              <InputField
+                name="firstName"
+                value={formData.firstName}
+                type="text"
+                placeholder="First Name"
+                changeFormData={changeFormData}
+                required={true}
+              />
+              <InputField
+                name="lastName"
+                value={formData.lastName}
+                type="text"
+                placeholder="Last Name"
+                changeFormData={changeFormData}
+                required={true}
+              />
+            </div>
+          ) : null}
           <InputField
             name="email"
             value={formData.email}
             type="text"
             placeholder="Email"
             changeFormData={changeFormData}
+            required={true}
           />
           <InputField
             name="password"
@@ -105,19 +117,22 @@ export default function LoginForm({ server }: LoginFormProps): ReactElement {
             type="text"
             placeholder="Password"
             changeFormData={changeFormData}
+            required={true}
           />
         </form>
         <div className="flex flex-row justify-between mt-5">
           <Button
-            buttonText="Login"
+            buttonText={lastPathSegment === "login" ? "Login" : "SignUp"}
             buttonColor="bg-blue-500"
-            handleClick={handleLogin}
+            handleClick={
+              lastPathSegment === "login" ? handleLogin : handleSignUp
+            }
           />
-          <Button
+          {/* <Button
             buttonText="Signup"
             buttonColor="bg-blue-500"
             handleClick={handleSignUp}
-          />
+          /> */}
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
-import LoginForm from "@/app/oauth-frontend/components/LoginForm";
-export default function LogOrSignInClient() {
+import LoginOrSignUpForm from "@/app/oauth-frontend/components/LoginOrSignUpForm";
+export default function LoginClient() {
   function handleLogin() {
     console.log("called handleLogin");
   }
@@ -9,7 +9,7 @@ export default function LogOrSignInClient() {
   };
   return (
     <div className="h-[100vh] bg-[darkblue]">
-      <LoginForm server="client" />
+      <LoginOrSignUpForm server="client" />
     </div>
   );
 }

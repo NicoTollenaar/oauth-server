@@ -1,8 +1,8 @@
-const baseUrlClientFrontend = "http://localhost:3000/client-frontend";
-const baseUrlClientBackend = "http://localhost:3000/client-backend";
-const baseUrlOauthBackend = "http://localhost:4000/oauth-backend";
-const baseUrlOauthFrontend = "http://localhost:3000/oauth-frontend";
-const baseUrlResourceServer = "http://localhost:4000/resource-server";
+export const baseUrlClientFrontend = "http://localhost:3000/client-frontend";
+export const baseUrlClientBackend = "http://localhost:3000/client-backend";
+export const baseUrlOauthBackend = "http://localhost:4000/oauth-backend";
+export const baseUrlOauthFrontend = "http://localhost:3000/oauth-frontend";
+export const baseUrlResourceServer = "http://localhost:4000/resource-server";
 
 export const redirect_uri = `${baseUrlClientFrontend}/get-resources`;
 
@@ -22,4 +22,5 @@ export const loggedInStatusEndpointClient = `${baseUrlClientBackend}/logged-in-s
 export const clientBackendGetResourcesEndpoint = `${baseUrlClientBackend}/get-resources`;
 export const clientBackendPKCEEndpoint = `${baseUrlClientBackend}/pkce`;
 export const resourcesEndpoint = `${baseUrlResourceServer}/get-resources`;
-export const clientLoginUrl = `${baseUrlClientFrontend}/login-or-signin`;
+export const clientLoginUrl = `${baseUrlClientFrontend}/login`;
+export const clientSignUpUrl = `${baseUrlClientFrontend}/signup`;
