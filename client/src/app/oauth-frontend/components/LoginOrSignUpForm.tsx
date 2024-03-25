@@ -2,7 +2,7 @@
 import useFormData from "@/app/hooks/useFormData";
 import InputField from "./InputField";
 import { FormData } from "@/app/types/customTypes";
-import { ReactElement } from "react";
+import { ReactElement, useState } from "react";
 import Button from "./Button";
 import {
   loginEndpointClient,
@@ -24,6 +24,7 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
   const pathName = usePathname();
   const lastPathSegment = pathName.split("/")[pathName.split("/").length - 1];
   console.log("lastPathSegment:", lastPathSegment);
+  const [message, setMessage] = useState<string>("");
   const { formData, changeFormData } = useFormData<FormData>({
     firstName: "",
     lastName: "",
@@ -53,9 +54,7 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
       break;
   }
 
-  console.log("formData", formData);
-
-  async function handleLogin() {
+  async function handleLogin(): Promise<void> {
     try {
       const response = await Utils.postLoginRequest(formData, loginEndpoint);
       console.log("response:", response);
@@ -73,13 +72,35 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
     }
   }
 
-  const handleSignUp = () => {
+  async function handleSignUp() {
     console.log("called handleSinUp");
-  };
+    try {
+      const response: Response = await fetch(signupEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok)
+        throw new Error(`status code:${JSON.stringify(response.status)}`);
+      setMessage(await response.text());
+      setTimeout(() => {
+        setMessage("");
+      }, 2000);
+    } catch (error) {
+      console.log(`Catch error in handleSignup oauth: ${error}`);
+      setMessage(`Request failed: ${JSON.stringify(error)}`);
+      setTimeout(() => {
+        setMessage("");
+      }, 2000);
+      setMessage;
+    }
+  }
 
   return (
     <div className="flex flex-row justify-center pt-10 mb-10 w-[vw]">
-      <div className="w-[50%]">
+      <div className="flex flex-col gap-5 w-[50%]">
         <form className="flex flex-col gap-5">
           {lastPathSegment === "signup" && (
             <div className="flex flex-col gap-5">
@@ -118,7 +139,7 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
             required={true}
           />
         </form>
-        <div className="flex flex-row justify-between mt-5">
+        <div className="mt-5">
           <Button
             buttonText={lastPathSegment === "login" ? "Login" : "SignUp"}
             buttonColor="bg-blue-500"
@@ -127,6 +148,9 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
             }
           />
         </div>
+        {message && (
+          <h1 className="text-white text-lg font-bold mt-5">{message}</h1>
+        )}
       </div>
     </div>
   );
