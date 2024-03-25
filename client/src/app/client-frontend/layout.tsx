@@ -5,6 +5,7 @@ import Button from "../oauth-frontend/components/Button";
 import {
   clientLoginUrl,
   clientSignUpUrl,
+  oauthLoginUrl,
   redirect_uri,
 } from "../constants/urls";
 import Logout from "../oauth-frontend/components/Logout";
@@ -61,7 +62,7 @@ export default function ClientNavBar({
           {hrefFirstLink === redirect_uri ? (
             <Logout changeMessage={() => {}} server="client" />
           ) : (
-            <Link href={"http://localhost:3000/oauth-frontend/login"}>
+            <Link href={oauthLoginUrl}>
               <Button
                 buttonText={"OAuth Server"}
                 buttonColor="bg-orange-500"
@@ -71,7 +72,7 @@ export default function ClientNavBar({
           )}
         </div>
         <div className="w-[50%] flex flex-row justify-center">
-          <h1 className="mt-10 text-[1.5em] text-center font-extrabold m-5">
+          <h1 className="mt-10 text-[1.5em] text-center text-white font-extrabold m-5">
             CLIENT APPLICATION
           </h1>
         </div>

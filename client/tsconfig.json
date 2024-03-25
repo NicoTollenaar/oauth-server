@@ -33,7 +33,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/client-frontend/login"
+    "src/app/client-frontend/signup"
   ],
   "exclude": ["node_modules"]
 }

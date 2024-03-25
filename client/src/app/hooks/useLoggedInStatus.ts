@@ -1,19 +1,35 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Dispatch, SetStateAction } from "react";
 import {
   loggedInStatusEndpointClient,
   loggedInStatusEndpointOAuth,
 } from "../constants/urls";
 import { ServerType } from "../types/customTypes";
 
-export default function useLoggedInStatus(server: ServerType) {
+export default function useLoggedInStatus(server: ServerType): {
+  isLoggedIn: boolean;
+  setIsLoggedIn: Dispatch<SetStateAction<boolean>>;
+} {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const loggedInStatusEndpoint: string =
     server === "oauth"
       ? loggedInStatusEndpointOAuth
       : loggedInStatusEndpointClient;
 
+  // =====  block below is temporary until login routes for server have been made =========
+
+  // if (server === "client") {
+  //   setIsLoggedIn(false);
+  //   return { isLoggedIn, setIsLoggedIn };
+  // }
+
+  // =============================================
+
   useEffect(() => {
+    if (server === "client") {
+      setIsLoggedIn(false);
+      return;
+    }
     async function getLoggedInStatus() {
       try {
         const response = await fetch(loggedInStatusEndpoint, {

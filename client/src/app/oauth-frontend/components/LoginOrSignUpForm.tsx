@@ -5,8 +5,6 @@ import { FormData } from "@/app/types/customTypes";
 import { ReactElement } from "react";
 import Button from "./Button";
 import {
-  baseUrlClientFrontend,
-  clientLoginUrl,
   loginEndpointClient,
   loginEndpointOAuth,
   redirect_uri,
@@ -25,7 +23,7 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
   const router = useRouter();
   const pathName = usePathname();
   const lastPathSegment = pathName.split("/")[pathName.split("/").length - 1];
-  console.log("plastPathSegment:", lastPathSegment);
+  console.log("lastPathSegment:", lastPathSegment);
   const { formData, changeFormData } = useFormData<FormData>({
     firstName: "",
     lastName: "",
@@ -83,7 +81,7 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
     <div className="flex flex-row justify-center pt-10 mb-10 w-[vw]">
       <div className="w-[50%]">
         <form className="flex flex-col gap-5">
-          {lastPathSegment === "login" ? (
+          {lastPathSegment === "signup" && (
             <div className="flex flex-col gap-5">
               <InputField
                 name="firstName"
@@ -102,7 +100,7 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
                 required={true}
               />
             </div>
-          ) : null}
+          )}
           <InputField
             name="email"
             value={formData.email}
@@ -128,11 +126,6 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
               lastPathSegment === "login" ? handleLogin : handleSignUp
             }
           />
-          {/* <Button
-            buttonText="Signup"
-            buttonColor="bg-blue-500"
-            handleClick={handleSignUp}
-          /> */}
         </div>
       </div>
     </div>

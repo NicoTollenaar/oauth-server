@@ -36,7 +36,7 @@ export default function Logout({
       logoutEndpoint = "";
   }
 
-  async function handleLogout() {
+  async function handleLogout(): Promise<void> {
     const response = await fetch(logoutEndpoint, {
       method: "DELETE",
       credentials: "include",

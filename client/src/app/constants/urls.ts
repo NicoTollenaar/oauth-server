@@ -24,3 +24,5 @@ export const clientBackendPKCEEndpoint = `${baseUrlClientBackend}/pkce`;
 export const resourcesEndpoint = `${baseUrlResourceServer}/get-resources`;
 export const clientLoginUrl = `${baseUrlClientFrontend}/login`;
 export const clientSignUpUrl = `${baseUrlClientFrontend}/signup`;
+export const oauthLoginUrl = `${baseUrlOauthFrontend}/login`;
+export const oauthSignUpUrl = `${baseUrlOauthFrontend}/signup`;
