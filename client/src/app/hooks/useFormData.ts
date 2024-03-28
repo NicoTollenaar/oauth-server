@@ -1,10 +1,11 @@
 "use client";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { FormData } from "../types/customTypes";
 
 export default function useFormData<FormData>(initialFormData: FormData): {
   formData: FormData;
   changeFormData: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  setFormData: Dispatch<SetStateAction<FormData>>;
 } {
   const [formData, setFormData] = useState<FormData>(initialFormData);
 
@@ -15,5 +16,5 @@ export default function useFormData<FormData>(initialFormData: FormData): {
     });
   }
 
-  return { formData, changeFormData };
+  return { formData, setFormData, changeFormData };
 }

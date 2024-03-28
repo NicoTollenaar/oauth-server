@@ -32,6 +32,7 @@ export default function useLoggedInStatus(server: ServerType): {
     }
     async function getLoggedInStatus() {
       try {
+        console.log("getLoggedInStatus called!");
         const response = await fetch(loggedInStatusEndpoint, {
           credentials: "include",
         });

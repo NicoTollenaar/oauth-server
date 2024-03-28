@@ -1,6 +1,5 @@
 import mongoose, { Model, Schema, Types } from "mongoose";
 import { scopes } from "../../types/customTypes";
-import { truncate } from "fs";
 
 export interface ICode extends Document {
   authorisationCode?: {
@@ -103,7 +102,7 @@ const codeSchema: Schema = new Schema<ICode, CodeModel, ICodeMethods>({
       },
     }, //unix timestamp indicating when token will expire.
   },
-  idToken: { type: String, unique: true, trim: true },
+  idToken: { type: String, unique: true, sparse: true, trim: true },
   userId: { type: Schema.Types.ObjectId, ref: "User" },
   recipientClientId: {
     type: String,

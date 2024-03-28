@@ -1,15 +1,14 @@
-import { ReactElement } from "react";
+import { ReactElement, useContext } from "react";
 import Button from "./Button";
 import {
   logoutClientEndpoint,
   logoutOAuthEndpoint,
 } from "@/app/constants/urls";
-import useLoggedInStatus from "@/app/hooks/useLoggedInStatus";
-import type { SetStateAction, Dispatch } from "react";
 import { ServerType } from "@/app/types/customTypes";
+import { AuthenticationContext } from "../authProvider";
 
 interface LogoutProps {
-  changeMessage: (newMessage: string | null) => void;
+  changeMessage: (newMessage: string) => void;
   server: ServerType;
 }
 
@@ -19,9 +18,11 @@ export default function Logout({
 }: LogoutProps): ReactElement {
   const {
     isLoggedIn,
-    setIsLoggedIn,
-  }: { isLoggedIn: boolean; setIsLoggedIn: Dispatch<SetStateAction<boolean>> } =
-    useLoggedInStatus(server);
+    changeLoggedInStatus,
+  }: {
+    isLoggedIn: boolean;
+    changeLoggedInStatus: (newStatus: boolean) => void;
+  } = useContext(AuthenticationContext);
 
   let logoutEndpoint: string;
 
@@ -44,9 +45,9 @@ export default function Logout({
     const responseBody = await response.text();
     changeMessage(responseBody);
     setTimeout(() => {
-      changeMessage(null);
-    }, 1000);
-    if (response.ok) setIsLoggedIn(false);
+      changeMessage("");
+    }, 3000);
+    if (response.ok) changeLoggedInStatus(false);
   }
   return (
     <>

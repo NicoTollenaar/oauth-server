@@ -2,7 +2,7 @@
 import useFormData from "@/app/hooks/useFormData";
 import InputField from "./InputField";
 import { FormData } from "@/app/types/customTypes";
-import { ReactElement, useState } from "react";
+import { ReactElement, useContext, useState } from "react";
 import Button from "./Button";
 import {
   loginEndpointClient,
@@ -14,23 +14,26 @@ import {
 import { Utils } from "@/app/utils/utils";
 import { usePathname, useRouter } from "next/navigation";
 import { ServerType } from "@/app/types/customTypes";
+import { AuthenticationContext } from "../authProvider";
 
 interface FormProps {
   server: ServerType;
 }
 
 export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
+  const { changeLoggedInStatus } = useContext(AuthenticationContext);
   const router = useRouter();
   const pathName = usePathname();
   const lastPathSegment = pathName.split("/")[pathName.split("/").length - 1];
-  console.log("lastPathSegment:", lastPathSegment);
   const [message, setMessage] = useState<string>("");
-  const { formData, changeFormData } = useFormData<FormData>({
+  const initialFormData = {
     firstName: "",
     lastName: "",
     email: "",
     password: "",
-  });
+  };
+  const { formData, setFormData, changeFormData } =
+    useFormData<FormData>(initialFormData);
 
   let redirectUrl: string;
   let loginEndpoint: string;
@@ -73,28 +76,36 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
   }
 
   async function handleSignUp() {
-    console.log("called handleSinUp");
     try {
-      const response: Response = await fetch(signupEndpoint, {
+      const response: Response = await fetch(signupEndpointOAuth, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
+      const responseJSON = await response.json();
+      console.log("In handleSignup, logging responseJSON:", responseJSON);
       if (!response.ok)
-        throw new Error(`status code:${JSON.stringify(response.status)}`);
-      setMessage(await response.text());
-      setTimeout(() => {
-        setMessage("");
-      }, 2000);
+        throw new Error(
+          `${response.status} ${response.statusText}\n${responseJSON.error} \n${responseJSON.error_description}`
+        );
+      if (responseJSON.isLoggedIn) {
+        changeLoggedInStatus(responseJSON.isLoggedIn);
+        setMessage(responseJSON.message);
+        setTimeout(() => {
+          setMessage("");
+          setFormData(initialFormData);
+          router.push(`${redirect_uri}?loggedIn=true`);
+        }, 3000);
+      }
     } catch (error) {
       console.log(`Catch error in handleSignup oauth: ${error}`);
-      setMessage(`Request failed: ${JSON.stringify(error)}`);
+      setMessage(`${error} `);
       setTimeout(() => {
         setMessage("");
-      }, 2000);
-      setMessage;
+      }, 10000);
     }
   }
 
@@ -125,7 +136,7 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
           <InputField
             name="email"
             value={formData.email}
-            type="text"
+            type="email"
             placeholder="Email"
             changeFormData={changeFormData}
             required={true}
@@ -149,7 +160,7 @@ export default function LoginOrSignUpForm({ server }: FormProps): ReactElement {
           />
         </div>
         {message && (
-          <h1 className="text-white text-lg font-bold mt-5">{message}</h1>
+          <pre className="text-white text-lg font-bold mt-5">{message}</pre>
         )}
       </div>
     </div>

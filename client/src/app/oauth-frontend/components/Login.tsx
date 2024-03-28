@@ -2,7 +2,11 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Utils } from "../../utils/utils";
-import { redirect_uri } from "../../constants/urls";
+import {
+  loginEndpointOAuth,
+  oauthLoginUrl,
+  redirect_uri,
+} from "../../constants/urls";
 import { QueryObject } from "../../types/customTypes";
 import Button from "./Button";
 import ConsentText from "./ConsentText";
@@ -15,10 +19,10 @@ interface LoginProps {
 
 export default function Login({ queryObject, handlerFunction }: LoginProps) {
   const router = useRouter();
-  const [firstName, setFirstName] = useState("Piet");
-  const [lastName, setLastName] = useState("Pieterszoon");
-  const [email, setEmail] = useState("piet@email.com");
-  const [password, setPassword] = useState("pietsPassword");
+  const [firstName, setFirstName] = useState("p");
+  const [lastName, setLastName] = useState("p");
+  const [email, setEmail] = useState("p@p.com");
+  const [password, setPassword] = useState("pppp");
 
   async function handleLogin() {
     const loginFormData = {
@@ -26,8 +30,11 @@ export default function Login({ queryObject, handlerFunction }: LoginProps) {
       password,
     };
     try {
-      const response = await Utils.postLoginRequest(loginFormData);
-      console.log("response:", response);
+      const response = await Utils.postLoginRequest(
+        loginFormData,
+        loginEndpointOAuth
+      );
+      console.log("In handleLoging, logging response:", response);
       if (response?.ok) {
         handlerFunction();
       } else {

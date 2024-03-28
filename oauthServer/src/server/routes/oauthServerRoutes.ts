@@ -17,6 +17,7 @@ import { User } from "../../database/models/User.Model";
 import Utils from "../../utils/utils";
 import {
   AccessTokenResponse,
+  IUser,
   JWK,
   MetaData,
   OAuthError,
@@ -33,7 +34,6 @@ import {
 } from "../../constants/urls";
 import {
   ACCESS_TOKEN_LIFETIME,
-  ID_PRIVATE_KEY_USED_FOR_SIGNING,
   ID_PUBLIC_KEY_USED_FOR_SIGNING,
   PRE_EXISTING_PUBLIC_KEYS_OAUTH_SERVER,
   REFRESH_TOKEN_LIFETIME,
@@ -60,25 +60,108 @@ router.post(
   returnAuthorisationCode
 );
 
-router.post("/login", isLoggedOut, async (req: Request, res: Response) => {
-  const { firstName, lastName, email, password } = req.body;
-  // const hashedPassword = await Utils.hashStringWithSalt(password);
-  console.log("in oauth server login route, logging req.body:", req.body);
-  try {
-    // check login credentials more thoroughly
-    const dbUser = await User.findOne({ email: "piet@email.com" });
-    if (!dbUser) return res.status(400).end();
-    req.session.user = { id: dbUser._id };
-    return res.status(200).end();
-  } catch (error) {
-    console.log("in catch block, /login route, logging error:", error);
-    const oauthError: OAuthError = {
-      error: "catch_error",
-      error_description: `catch_error in isLoggedOut: ${error}`,
-    };
-    return res.status(401).json(oauthError);
+router.post(
+  "/signup",
+  isLoggedOut,
+  async (req: Request, res: Response): Promise<Response> => {
+    const formData = req.body;
+    try {
+      if (await User.findOne({ email: formData.email }))
+        return res.status(400).send("Email already in use");
+      if (
+        !formData.firstName ||
+        !formData.lastName ||
+        !formData.email ||
+        !formData.password
+      )
+        return res
+          .status(400)
+          .json(Utils.createOauthError("Invalid request", "Form incomplete"));
+      if (
+        !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email)
+      )
+        return res
+          .status(400)
+          .json(Utils.createOauthError("Invalid request", "Invalid email"));
+      if (formData.password.length < 4)
+        return res
+          .status(400)
+          .json(
+            Utils.createOauthError(
+              "Invalid request",
+              "Password must contain at least four characters"
+            )
+          );
+      const { hash, salt } = await Utils.hashStringWithSalt(formData.password);
+      const newUser = {
+        ...formData,
+        hashedPassword: {
+          hash,
+          salt,
+        },
+      };
+      delete newUser.password;
+      const dbNewUser = await User.create(newUser);
+      if (!dbNewUser)
+        return res
+          .status(500)
+          .json(
+            Utils.createOauthError("Database error", "Creating new user failed")
+          );
+      req.session.user = { id: dbNewUser._id };
+      return req.session.user
+        ? res.status(200).json({
+            message: "You're signed up, redirecting back to START",
+            isLoggedIn: true,
+          })
+        : res
+            .status(500)
+            .json(
+              Utils.createOauthError(
+                "Server error",
+                "Failed to create new user session"
+              )
+            );
+    } catch (error) {
+      console.log(`Catch error in oath signup route: ${error}`);
+      return res
+        .status(500)
+        .json(
+          Utils.createOauthError(
+            "catch_error",
+            `Catch error in oauth signup route: ${error}`
+          )
+        );
+    }
   }
-});
+);
+
+router.post(
+  "/login",
+  isLoggedOut,
+  async (req: Request, res: Response): Promise<Response> => {
+    const { firstName, lastName, email, password } = req.body;
+    // const hashedPassword = await Utils.hashStringWithSalt(password);
+    console.log("in oauth server login route, logging req.body:", req.body);
+    try {
+      // check login credentials more thoroughly
+      const dbUser = await User.findOne({ email: email });
+      if (!dbUser)
+        return res
+          .status(400)
+          .json(Utils.createOauthError("login_error", "credentials not found"));
+      req.session.user = { id: dbUser._id };
+      return res.status(200).send("Login succesful");
+    } catch (error) {
+      console.log("in catch block, /login route, logging error:", error);
+      const oauthError: OAuthError = {
+        error: "catch_error",
+        error_description: `catch_error in isLoggedOut: ${error}`,
+      };
+      return res.status(401).json(oauthError);
+    }
+  }
+);
 
 // see oauth.com:
 // If an authorization code is used more than once, the authorization server must deny the subsequent requests. This is easy to accomplish if the authorization codes are stored in a database, since they can simply be marked as used. If a code is used more than once, it should be treated as an attack. If possible, the service should revoke the previous access tokens that were issued from this authorization code.

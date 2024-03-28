@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Button from "./components/Button";
@@ -9,15 +8,21 @@ import {
   redirect_uri,
 } from "@/app/constants/urls";
 import Logout from "./components/Logout";
+import AuthenticationProvider from "./authProvider";
+import { useState } from "react";
 
 export default function OAuthNavBar({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [message, setMessage] = useState<string>("");
   const pathName = usePathname();
   const lastPathSegment = pathName.split("/")[pathName.split("/").length - 1];
-  console.log("lastPathSegment", lastPathSegment);
+
+  function changeMessage(newMessage: string): void {
+    setMessage(newMessage)
+  }
 
   let hrefFirstLink: string;
   let firstLinkText: string;
@@ -37,43 +42,39 @@ export default function OAuthNavBar({
   }
 
   return (
-    <section className="w-[vw] flex flex-col">
-      <div className="w-[100%] flex flex-row justify-center">
-        <div className="w-[25%] mt-10 ms-10">
-          <Logout changeMessage={() => {}} server="oauth" />
-        </div>
-        <div className="w-[50%] flex flex-row justify-center">
-          <h1 className="mt-10 text-[1.5em] text-center font-extrabold m-5">
-            OAUTH SERVER
-          </h1>
-        </div>
-        <div className="w-[25%] flex flex-row justify-end mt-10 me-10">
-          <div className="flex flex-row justify-between gap-8">
-            <Link href={hrefFirstLink}>
-              <Button
-                buttonText={firstLinkText}
-                buttonColor="bg-orange-500"
-                handleClick={() => {}}
-              />
-            </Link>
-            {/* <Link href={hrefSecondLink}>
-              <Button
-                buttonText={secondLinkText}
-                buttonColor="bg-orange-500"
-                handleClick={() => {}}
-              />
-            </Link> */}
-            <Link href={redirect_uri}>
-              <Button
-                buttonText={"Client App"}
-                buttonColor="bg-orange-500"
-                handleClick={() => {}}
-              />
-            </Link>
+    <section className="w-[vw] h-[100vh] flex flex-col bg-black">
+      <AuthenticationProvider>
+        <div className="w-[100%] flex flex-row justify-center">
+          <div className="w-[25%] mt-10 ms-10">
+            <Logout changeMessage={changeMessage} server="oauth" />
+          </div>
+          <div className="w-[50%] flex flex-row justify-center">
+            <h1 className="mt-10 text-[1.5em] text-center font-extrabold m-5">
+              OAUTH SERVER
+            </h1>
+          </div>
+          <div className="w-[25%] flex flex-row justify-end mt-10 me-10">
+            <div className="flex flex-row justify-between gap-8">
+              <Link href={hrefFirstLink}>
+                <Button
+                  buttonText={firstLinkText}
+                  buttonColor="bg-orange-500"
+                  handleClick={() => {}}
+                />
+              </Link>
+              <Link href={redirect_uri}>
+                <Button
+                  buttonText={"Client App"}
+                  buttonColor="bg-orange-500"
+                  handleClick={() => {}}
+                />
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="children-div">{children}</div>
+        <div>{children}</div>
+        {message && <pre className="text-white">{message}</pre>}
+      </AuthenticationProvider>
     </section>
   );
 }

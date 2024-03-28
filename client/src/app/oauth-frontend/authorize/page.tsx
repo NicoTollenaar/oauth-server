@@ -23,10 +23,12 @@ export default function Authorize(): ReactElement<any, any> | undefined {
 
   async function handleConfirm() {
     try {
+      console.log("queryObject", queryObject);
       const authorisationCode: string | OAuthError =
         await Utils.postConsentAndGetAuthorisationCode(
           queryObject as unknown as QueryObject
         );
+      console.log("authorisationCode:", authorisationCode);
       if (typeof authorisationCode === "string") {
         router.push(
           `${redirect_uri}?code=${authorisationCode}&state=${queryObject.state}`

@@ -16,7 +16,7 @@ export async function isLoggedOut(
   next: NextFunction
 ) {
   if (req.session.user) {
-    return res.redirect(`${redirect_uri}?loggedIn=true`);
+    return res.status(200).json({isLoggedIn: true, message: "You're already logged in"});
   } else {
     next();
   }

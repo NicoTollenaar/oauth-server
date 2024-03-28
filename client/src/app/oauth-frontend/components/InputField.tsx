@@ -17,7 +17,7 @@ export default function InputField({
   placeholder,
   changeFormData,
   value,
-  required
+  required,
 }: InputFieldProps): ReactElement {
   // const [input, setInput] = useState<string>("");
 

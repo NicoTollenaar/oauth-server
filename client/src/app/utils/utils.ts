@@ -39,6 +39,11 @@ export class Utils {
         body: JSON.stringify(queryObject),
       });
       const responseBody = await response.json();
+      console.log("In postConstentAndGetCode, logging response:", response);
+      console.log(
+        "In postConstentAndGetCode, logging responseBody:",
+        responseBody
+      );
       return response.ok ? responseBody.authorisationCode : responseBody;
     } catch (error) {
       console.log("In catch block utils, logging error:", error);

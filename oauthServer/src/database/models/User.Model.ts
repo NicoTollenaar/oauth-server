@@ -8,17 +8,18 @@ const userSchema = new mongoose.Schema<IUser>(
     email: { type: String, required: true, unique: true },
     hashedPassword: {
       hash: { type: String, required: true },
-      salt: {type: Buffer, required: true}
+      salt: { type: Buffer, required: true },
     },
-    oauthConsents: [
-      {
-        _id: false, // no ObjectId on subdocuments, otherwise addToSet does not work
-        clientId: { type: String, required: true },
-        consentedScope: [
-          { type: String, required: true, unique: true, enum: scopes },
-        ],
-      },
-    ],
+    oauthConsents: {
+      type: [
+        {
+          _id: false, // no ObjectId on subdocuments, otherwise addToSet does not work
+          clientId: { type: String },
+          consentedScope: [{ type: String, enum: scopes }],
+        },
+      ],
+      required: false,
+    },
   },
   { timestamps: true }
 );

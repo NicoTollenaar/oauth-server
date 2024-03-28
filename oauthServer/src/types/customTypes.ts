@@ -16,10 +16,10 @@ export interface IUser {
     hash: string;
     salt: Buffer;
   };
-  oauthConsents: [
+  oauthConsents?: [
     {
       clientId: String;
-      consentedScope: ["openId" | "email" | "profile"];
+      consentedScope: ["openId" | "email" | "profile" | null | ""];
     }
   ];
 }
